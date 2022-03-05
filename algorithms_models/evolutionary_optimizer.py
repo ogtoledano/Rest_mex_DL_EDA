@@ -35,11 +35,11 @@ from torch.utils.data import DataLoader
 from utils.imbalanced_dataset_sampling import ImbalancedDatasetSampler
 
 # Scikit-learn ----------------------------------------------------------+
-from sklearn.metrics import classification_report,accuracy_score
+from sklearn.metrics import classification_report, accuracy_score, mean_absolute_error, f1_score
 from skorch import NeuralNet
 import os
 #--- CONSTANTS ----------------------------------------------------------------+
-
+import sklearn.metrics as sm
 
 # Defining the optimization problem as argmin(lossFuntion) and the individual
 # with continuous codification as update rules for weight based on evolutionary algorithms
@@ -97,6 +97,10 @@ class EDA_Optimizer(NeuralNet):
         path = fit_params["fit_param"]["checkpoint"].split('.')[0] +"_"+self.mode+".pt"
         self.individuals=fit_params["fit_param"]["population_size"]
 
+        self.test_accs = []
+        self.train_accs = []
+        self.confusion_mtxes = []
+
         if self.mode == "EDA_EMNA":
             log_exp_run.experiments("Training with EDA_EMNA...")
             start_time = time.time()
@@ -106,13 +110,13 @@ class EDA_Optimizer(NeuralNet):
         if self.mode == "EDA_CMA_ES":
             log_exp_run.experiments("Training with EDA_CMA_ES...")
             start_time = time.time()
-            self.train_eda_cma_es_early_stopping(self.sigma, self.centroid, fit_params["fit_param"]["generations"], X)
+            self.train_eda_cma_es_early_stopping(self.sigma, self.centroid, fit_params["fit_param"]["generations"], X, **fit_params)
             log_exp_run.experiments("Time elapsed for EDA_CMA_ES: " + str(time.time() - start_time))
 
         if self.mode == "EDA_CUMDA":
             log_exp_run.experiments("Training with EDA_CUMDA...")
             start_time = time.time()
-            self.train_eda_cumda_early_stopping(self.sigma, fit_params["fit_param"]["generations"], X)
+            self.train_eda_cumda_early_stopping(self.sigma, fit_params["fit_param"]["generations"], X, **fit_params)
             log_exp_run.experiments("Time elapsed for EDA_CUMDA: " + str(time.time() - start_time))
 
         self.save_state(path)
@@ -211,6 +215,42 @@ class EDA_Optimizer(NeuralNet):
         log_exp_run.experiments("\n" + classification_report(labels, predictions))
         return accuracy
 
+    def score_unbalanced(self, X, y=None, is_unbalanced=True):
+        train_loss = 0
+        criterion = nn.CrossEntropyLoss()
+        iter_data = DataLoader(X, batch_size=self.module__batch_size, sampler=ImbalancedDatasetSampler(X)) if is_unbalanced else DataLoader(X, batch_size=self.module__batch_size, shuffle=True)
+        log_exp_run = make_logger(name="experiment_" + self.mode)
+
+        predictions = []
+        labels = []
+        self.module_.to(self.device)
+        self.module_.eval()
+
+        with torch.no_grad():
+            for bach in iter_data:
+                x_test = bach['features'].type(torch.LongTensor)
+                y_test = bach['labels'].type(torch.LongTensor)
+                x_test = x_test.to(self.device)
+                y_test = y_test.to(self.device)
+                prob = self.module_(x_test)
+                loss = criterion(prob, y_test)
+                train_loss += loss.item()
+                _, predicted = torch.max(prob.data, 1)
+                predictions.extend(predicted.cpu().numpy())
+                labels.extend(y_test.cpu().numpy())
+
+        accuracy = accuracy_score(labels, predictions)
+        mae = mean_absolute_error(labels, predictions)
+        macro_f1 = f1_score(labels, predictions, average='macro')
+
+        log_exp_run.experiments("Cross-entropy loss for each fold: " + str(train_loss))
+        log_exp_run.experiments("Accuracy for each fold: " + str(accuracy))
+        log_exp_run.experiments("\n"+classification_report(labels, predictions))
+        log_exp_run.experiments("\nMean Absolute Error (MAE): " + str(mae))
+        log_exp_run.experiments("\nMacro F1: " + str(macro_f1))
+        confusion_mtx = sm.confusion_matrix(labels, predictions)
+        return accuracy, confusion_mtx
+
     # Training of tensor model using EMNA as EDA algorithms, with early stopping
     def train_eda_enma_early_stopping(self, sigma, centroid, generations, data):
         log_exp_run = make_logger(name="experiment_" + self.mode)
@@ -298,7 +338,7 @@ class EDA_Optimizer(NeuralNet):
         log_exp_run.experiments(list(series_fitness))
 
     # Training tensor model using CUMDA as EDA algorithms, with early stopping
-    def train_eda_cumda_early_stopping(self, sigma, generations, data):
+    def train_eda_cumda_early_stopping(self, sigma, generations, data,**fit_params):
         log_exp_run = make_logger(name="experiment_" + self.mode)
         iter_data = DataLoader(data, batch_size=self.module__batch_size, sampler=ImbalancedDatasetSampler(data))
         # LAMBDA is the size of the population
@@ -353,6 +393,15 @@ class EDA_Optimizer(NeuralNet):
             record = stats.compile(population) if stats is not None else {}
             logbook.record(gen=gen, nevals=len(population), **record)
 
+            # Test acc and confusion matrix  charts
+            best_solution = hof[0]
+            fix_individual_to_fc_layers(best_solution, self.module_, self.device)
+            test_acc, confusion_mtx = self.score_unbalanced(X=fit_params["test_data"] if fit_params.get('fit_param')
+                                            is None else fit_params["fit_param"]["test_data"], is_unbalanced=False)
+            self.test_accs.append(test_acc)
+            self.confusion_mtxes.append(confusion_mtx)
+            self.train_accs.append(self.score_unbalanced(data,is_unbalanced=True))
+
             # print(self.logbook.stream)
             t += 1
 
@@ -385,7 +434,7 @@ class EDA_Optimizer(NeuralNet):
         log_exp_run.experiments(list(series_fitness))
 
     # Training tensor model using CMA-ES as EDA algorithms, with early stopping
-    def train_eda_cma_es_early_stopping(self, sigma, centroid, generations, data):
+    def train_eda_cma_es_early_stopping(self, sigma, centroid, generations, data,**fit_params):
         log_exp_run = make_logger(name="experiment_" + self.mode)
         iter_data = DataLoader(data, batch_size=self.module__batch_size, sampler=ImbalancedDatasetSampler(data))
         # LAMBDA is the size of the population
@@ -434,6 +483,15 @@ class EDA_Optimizer(NeuralNet):
 
             record = stats.compile(population) if stats is not None else {}
             logbook.record(gen=gen, nevals=len(population), **record)
+
+            # Test acc and confusion matrix  charts
+            best_solution = hof[0]
+            fix_individual_to_fc_layers(best_solution, self.module_, self.device)
+            test_acc, confusion_mtx = self.score_unbalanced(X=fit_params["test_data"] if fit_params.get('fit_param')
+                                            is None else fit_params["fit_param"]["test_data"], is_unbalanced=False)
+            self.test_accs.append(test_acc)
+            self.confusion_mtxes.append(confusion_mtx)
+            self.train_accs.append(self.score_unbalanced(data,is_unbalanced=True))
 
             # print(self.logbook.stream)
             t += 1
