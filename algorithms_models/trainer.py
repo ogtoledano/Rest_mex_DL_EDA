@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from utils.logging_custom import make_logger
 
 # Scikit-learn ----------------------------------------------------------+
-from sklearn.metrics import classification_report,accuracy_score
+from sklearn.metrics import classification_report,accuracy_score, mean_absolute_error, f1_score
 from skorch import NeuralNet
 from utils.imbalanced_dataset_sampling import ImbalancedDatasetSampler
 import sklearn.metrics as sm
@@ -75,11 +75,15 @@ class Trainer(NeuralNet):
                 predictions.extend(predicted.cpu().numpy())
                 labels.extend(y_test.cpu().numpy())
 
-        accuracy = accuracy_score(predictions, labels)
+        accuracy = accuracy_score(labels, predictions)
+        mae = mean_absolute_error(labels, predictions)
+        macro_f1 = f1_score(labels, predictions, average='macro')
 
         log_exp_run.experiments("Cross-entropy loss for each fold: " + str(train_loss))
         log_exp_run.experiments("Accuracy for each fold: " + str(accuracy))
         log_exp_run.experiments("\n"+classification_report(labels, predictions))
+        log_exp_run.experiments("\nMean Absolute Error (MAE)" + str(mae))
+        log_exp_run.experiments("\nMacro F1 (MAE)" + str(macro_f1))
         return accuracy
 
     def score_unbalanced(self, X, y=None, is_unbalanced=True):
@@ -106,11 +110,15 @@ class Trainer(NeuralNet):
                 predictions.extend(predicted.cpu().numpy())
                 labels.extend(y_test.cpu().numpy())
 
-        accuracy = accuracy_score(predictions, labels)
+        accuracy = accuracy_score(labels, predictions)
+        mae = mean_absolute_error(labels, predictions)
+        macro_f1 = f1_score(labels, predictions, average='macro')
 
         log_exp_run.experiments("Cross-entropy loss for each fold: " + str(train_loss))
         log_exp_run.experiments("Accuracy for each fold: " + str(accuracy))
         log_exp_run.experiments("\n"+classification_report(labels, predictions))
+        log_exp_run.experiments("\nMean Absolute Error (MAE)" + str(mae))
+        log_exp_run.experiments("\nMacro F1 (MAE)" + str(macro_f1))
         confusion_mtx = sm.confusion_matrix(labels, predictions)
         return accuracy, confusion_mtx
 

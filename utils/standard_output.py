@@ -17,7 +17,7 @@ def score_sentiment(X, model, device):
             x_test = torch.reshape(x_test, (1, x_test.shape[0]))
             prob = model(x_test)
             _, predicted = torch.max(prob.data, 1)
-            output += "\"sentiment\"\t{}\t{}\n".format(i+1, predicted.cpu().numpy()[0]+1)
+            output += "\"recommendation\"\t\"Usuario\"{}\t{}\n".format(i+1, predicted.cpu().numpy()[0]+1)
 
     return output
 
