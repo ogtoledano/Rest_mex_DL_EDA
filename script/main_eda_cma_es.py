@@ -25,7 +25,7 @@ import seaborn as sns
 from utils.standard_output import make_txt_file_out
 
 
-def confusion_matrix_chart(test_accs,train_accs, confusion_mtxes, labels, epoches, url_img, figsize=(20, 8)):
+def confusion_matrix_chart(test_accs,train_accs, confusion_mtxes, labels, generations, url_img, figsize=(20, 8)):
     cm = confusion_mtxes[np.argmax(test_accs)]
     cm_sum = np.sum(cm, axis=1, keepdims=True)
     cm_perc = cm / cm_sum * 100
@@ -44,7 +44,7 @@ def confusion_matrix_chart(test_accs,train_accs, confusion_mtxes, labels, epoche
     cm.columns.name = 'Predicted'
 
     fig = plt.figure(figsize=figsize)
-    x_axis= np.asarray([x for x in range(epoches)])
+    x_axis= np.asarray([x for x in range(generations)])
     plt.subplot(1, 2, 1)
     plt.plot(x_axis,test_accs, 'g')
     plt.xlabel("Epoches")
@@ -113,7 +113,7 @@ if __name__ == "__main__":
         model.score(test_data)
         model.score_unbalanced(train_data)
         confusion_matrix_chart(model.test_accs, model.train_accs, model.confusion_mtxes,
-                               range(dic_param['labels']), dic_param['epochs'], wdir + "experiments/")
+                               range(dic_param['labels']), dic_param['generations'], wdir + "experiments/")
         make_txt_file_out("sentiment", test_data, model.get_module(), device, wdir + "experiments/")
         log_exp_run.experiments(dic_param['cnn_optimizer'] + " + EDA_CMA_ES: Process ends successfully!")
         log_exp_run.experiments("--------------------------\n\n\n")
