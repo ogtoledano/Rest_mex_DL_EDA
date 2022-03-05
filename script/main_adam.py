@@ -19,7 +19,7 @@ from script.main_gradient_based import train_model_adam
 if __name__ == "__main__":
     # Load train arguments from file
     os.chdir("../")
-    wdir = os.getcwd() + "/" if not os.path.exists("/content/REST-MEX-DL-EDA/") else "/content/REST-MEX-DL-EDA/"  # only colab
+    wdir = os.getcwd() + "/" if not os.path.exists("/content/Rest_mex_DL_EDA/") else "/content/Rest_mex_DL_EDA/"  # only colab
     dic_param = load_param_from_file(wdir + "script/arguments.txt")
     log_exp_run = make_logger(name="" + dic_param['name_log_experiments_result'])
     device = "cuda:" + str(dic_param['cuda_device_id']) if torch.cuda.is_available() else "cpu"
