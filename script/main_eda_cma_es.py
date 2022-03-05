@@ -57,6 +57,7 @@ def confusion_matrix_chart(test_accs,train_accs, confusion_mtxes, labels, epoche
     plt.savefig(url_img+'figure.png')
     plt.show()
 
+
 if __name__ == "__main__":
     # Load train arguments from file
     os.chdir("../")
