@@ -82,8 +82,8 @@ class Trainer(NeuralNet):
         log_exp_run.experiments("Cross-entropy loss for each fold: " + str(train_loss))
         log_exp_run.experiments("Accuracy for each fold: " + str(accuracy))
         log_exp_run.experiments("\n"+classification_report(labels, predictions))
-        log_exp_run.experiments("\nMean Absolute Error (MAE)" + str(mae))
-        log_exp_run.experiments("\nMacro F1 (MAE)" + str(macro_f1))
+        log_exp_run.experiments("\nMean Absolute Error (MAE): " + str(mae))
+        log_exp_run.experiments("\nMacro F1: " + str(macro_f1))
         return accuracy
 
     def score_unbalanced(self, X, y=None, is_unbalanced=True):

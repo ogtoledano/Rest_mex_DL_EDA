@@ -47,7 +47,7 @@ def confusion_matrix_chart(test_accs,train_accs, confusion_mtxes, labels, genera
     x_axis= np.asarray([x for x in range(generations)])
     plt.subplot(1, 2, 1)
     plt.plot(x_axis,test_accs, 'g')
-    plt.xlabel("Epoches")
+    plt.xlabel("Generations")
     plt.plot(x_axis,train_accs,'r')
     plt.ylabel("Accuracy")
     plt.grid(True)
