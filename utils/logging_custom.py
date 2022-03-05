@@ -30,7 +30,7 @@ def make_logger(name="experiment"):
 
     # Main path and file for logging
     #os.chdir("../")
-    wdir = os.getcwd() + "/" if not os.path.exists("/home/CLUSTER/uclv_ogtoledano/doctorado/Topic_Rec_Based_EDA/") else "/home/CLUSTER/uclv_ogtoledano/doctorado/Topic_Rec_Based_EDA/"  # only slurm cluster
+    wdir = os.getcwd() + "/" if not os.path.exists("/content/Rest_mex_DL_EDA/") else "/content/Rest_mex_DL_EDA/"  # only colab
     urlPath = wdir + "/experiments"  # ../experiments
     logging.basicConfig(filename=urlPath + "/" + name + ".log")
 
