@@ -79,6 +79,9 @@ class EDA_Optimizer(NeuralNet):
         log_exp_run.experiments("Amount of parameters: " + str(self.param_length))
         return self
 
+    def get_module(self):
+        return self.module_
+
     # Sckorch methods: this method fits the estimator using a determinate way defined by
     # mode attr. The main modes for training are: EDA_EMNA, EDA_CMA_ES, EDA_CUMDA for all
     # representation model torch ann
