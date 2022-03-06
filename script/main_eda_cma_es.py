@@ -80,6 +80,7 @@ if __name__ == "__main__":
 
     for i in range(dic_param['num_executions']): # Total measurement
         # Do STAGE 1: Learning convolutional layers by gradient-based method
+        print("Training and test results of {}: ".format(dic_param['cnn_optimizer']))
         start_time = time.time()
         if dic_param['cnn_optimizer'] == 'Adam':
             gscv_best_model = train_model_adam(dic_param, log_exp_run, wdir, device, tensor_embedding, train_data, test_data,gscv_best_model)
@@ -112,6 +113,7 @@ if __name__ == "__main__":
         log_exp_run.experiments("Time elapsed: " + str(time.time() - start_time))
         model.score(test_data)
         model.score_unbalanced(train_data)
+        print("Training and test results of {} and {}: ".format(dic_param['cnn_optimizer'],param_distribution['mode']))
         confusion_matrix_chart(model.test_accs, model.train_accs, model.confusion_mtxes,
                                range(dic_param['labels']), dic_param['generations'], wdir + "experiments/")
         make_txt_file_out("sentiment", test_data, model.get_module(), device, wdir + "experiments/")
