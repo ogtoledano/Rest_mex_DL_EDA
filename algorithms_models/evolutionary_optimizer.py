@@ -495,7 +495,7 @@ class EDA_Optimizer(NeuralNet):
                                             is None else fit_params["fit_param"]["test_data"], is_unbalanced=False)
             self.test_accs.append(test_acc)
             self.confusion_mtxes.append(confusion_mtx)
-            self.train_accs.append(self.score(data, is_unbalanced=True))
+            self.train_accs.append(self.score(data))
 
             # print(self.logbook.stream)
             t += 1
