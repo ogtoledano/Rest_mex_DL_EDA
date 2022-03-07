@@ -112,7 +112,7 @@ if __name__ == "__main__":
         model.fit(train_data, fit_param=param_model)
         log_exp_run.experiments("Time elapsed: " + str(time.time() - start_time))
         model.score(test_data)
-        model.score_unbalanced(train_data)
+        model.score_unbalanced(train_data, print_logs=True)
         print("Training and test results of {} and {}: ".format(dic_param['cnn_optimizer'],param_distribution['mode']))
         confusion_matrix_chart(model.test_accs, model.train_accs, model.confusion_mtxes,
                                range(dic_param['labels']), dic_param['generations'], wdir + "experiments/")

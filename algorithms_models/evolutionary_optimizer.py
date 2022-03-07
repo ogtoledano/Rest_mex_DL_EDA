@@ -222,7 +222,7 @@ class EDA_Optimizer(NeuralNet):
         log_exp_run.experiments("\nMacro F1: " + str(macro_f1))
         return accuracy
 
-    def score_unbalanced(self, X, y=None, is_unbalanced=True):
+    def score_unbalanced(self, X, y=None, is_unbalanced=True, print_logs=False):
         train_loss = 0
         criterion = nn.CrossEntropyLoss()
         iter_data = DataLoader(X, batch_size=self.module__batch_size, sampler=ImbalancedDatasetSampler(X)) if is_unbalanced else DataLoader(X, batch_size=self.module__batch_size, shuffle=True)
@@ -247,14 +247,17 @@ class EDA_Optimizer(NeuralNet):
                 labels.extend(y_test.cpu().numpy())
 
         accuracy = accuracy_score(labels, predictions)
-        mae = mean_absolute_error(labels, predictions)
-        macro_f1 = f1_score(labels, predictions, average='macro')
 
-        log_exp_run.experiments("Cross-entropy loss for each fold: " + str(train_loss))
-        log_exp_run.experiments("Accuracy for each fold: " + str(accuracy))
-        log_exp_run.experiments("\n"+classification_report(labels, predictions))
-        log_exp_run.experiments("\nMean Absolute Error (MAE): " + str(mae))
-        log_exp_run.experiments("\nMacro F1: " + str(macro_f1))
+        if print_logs:
+            mae = mean_absolute_error(labels, predictions)
+            macro_f1 = f1_score(labels, predictions, average='macro')
+
+            log_exp_run.experiments("Cross-entropy loss for each fold: " + str(train_loss))
+            log_exp_run.experiments("Accuracy for each fold: " + str(accuracy))
+            log_exp_run.experiments("\n"+classification_report(labels, predictions))
+            log_exp_run.experiments("\nMean Absolute Error (MAE)" + str(mae))
+            log_exp_run.experiments("\nMacro F1 (MAE)" + str(macro_f1))
+
         confusion_mtx = sm.confusion_matrix(labels, predictions)
         return accuracy, confusion_mtx
 
