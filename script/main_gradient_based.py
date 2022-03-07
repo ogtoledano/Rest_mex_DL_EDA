@@ -53,7 +53,7 @@ def confusion_matrix_chart(test_accs,train_accs, confusion_mtxes, labels, epoche
     plt.show()
 
 
-def train_model_sgd(dic_param, log_exp_run, wdir, device, tensor_embedding, train_data, test_data,gscv_best_model):
+def train_model_sgd(dic_param, log_exp_run, wdir, device, tensor_embedding, train_data, test_data, gscv_best_model):
     # Defining a param distribution for hyperparameter-tuning for model and fit params
     param_grid = {
         'lr': dic_param['alpha_distribution'],
@@ -124,7 +124,7 @@ def train_model_sgd(dic_param, log_exp_run, wdir, device, tensor_embedding, trai
     return gscv_best_model
 
 
-def train_model_adam(dic_param, log_exp_run, wdir, device, tensor_embedding, train_data, test_data,gscv_best_model):
+def train_model_adam(dic_param, log_exp_run, wdir, device, tensor_embedding, train_data, test_data, dev_data, gscv_best_model):
     # Defining a param distribution for hyperparameter-tuning for model and fit params
     param_grid = {
         'lr': dic_param['alpha_distribution'],
@@ -193,6 +193,7 @@ def train_model_adam(dic_param, log_exp_run, wdir, device, tensor_embedding, tra
     best_model.fit(train_data, fit_param=fit_param)
     log_exp_run.experiments("Time elapsed for Adam : " + str(time.time() - start_time))
     best_model.score(test_data)
+    best_model.score(dev_data)
     best_model.score(train_data)
     confusion_matrix_chart(best_model.test_accs, best_model.train_accs, best_model.confusion_mtxes, range(dic_param['labels']), dic_param['epochs'], wdir + "experiments/")
     make_txt_file_out("sentiment",test_data,best_model.get_module(),device,wdir + "experiments/")

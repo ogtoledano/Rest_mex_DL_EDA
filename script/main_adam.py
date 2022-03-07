@@ -33,8 +33,9 @@ if __name__ == "__main__":
     # Create lazy Dataloader from Tensor dataset
     train_data = CustomDataLoader(wdir + 'datasets/' + dic_param['dataset_train'])
     test_data = CustomDataLoader(wdir + 'datasets/' + dic_param['dataset_test'])
+    dev_data = CustomDataLoader(wdir + 'datasets/' + dic_param['dataset_dev'])
 
     gscv_best_model = None
-    train_model_adam(dic_param, log_exp_run, wdir, device, tensor_embedding, train_data, test_data, gscv_best_model)
+    train_model_adam(dic_param, log_exp_run, wdir, device, tensor_embedding, train_data, test_data,dev_data, gscv_best_model)
 
 
