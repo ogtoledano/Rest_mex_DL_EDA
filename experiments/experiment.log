@@ -22,3 +22,41 @@ EXPERIMENTS_RESULTS:root:3637
 EXPERIMENTS_RESULTS:root:Number of instances for testing: 
 EXPERIMENTS_RESULTS:root:1560
 EXPERIMENTS_RESULTS:root:Found unique tokens: 10672
+EXPERIMENTS_RESULTS:root:Categories-labels: 
+EXPERIMENTS_RESULTS:root:['anger', 'disgust', 'fear', 'joy', 'others', 'sadness', 'surprise']
+EXPERIMENTS_RESULTS:root:Number of instances for training: 
+EXPERIMENTS_RESULTS:root:6567
+EXPERIMENTS_RESULTS:root:Number of instances for testing: 
+EXPERIMENTS_RESULTS:root:1656
+EXPERIMENTS_RESULTS:root:Found unique tokens: 21064
+EXPERIMENTS_RESULTS:root:Categories-labels: 
+EXPERIMENTS_RESULTS:root:['anger', 'disgust', 'fear', 'joy', 'others', 'sadness', 'surprise']
+EXPERIMENTS_RESULTS:root:Number of instances for training: 
+EXPERIMENTS_RESULTS:root:6567
+EXPERIMENTS_RESULTS:root:Number of instances for testing: 
+EXPERIMENTS_RESULTS:root:1656
+EXPERIMENTS_RESULTS:root:Found unique tokens: 21064
+EXPERIMENTS_RESULTS:root:Categories-labels: 
+EXPERIMENTS_RESULTS:root:['anger', 'disgust', 'fear', 'joy', 'others', 'sadness', 'surprise']
+EXPERIMENTS_RESULTS:root:Number of instances for training: 
+EXPERIMENTS_RESULTS:root:5723
+EXPERIMENTS_RESULTS:root:Number of instances for testing: 
+EXPERIMENTS_RESULTS:root:1656
+EXPERIMENTS_RESULTS:root:Found unique tokens: 19192
+EXPERIMENTS_RESULTS:root:Found unique tokens: 19192
+EXPERIMENTS_RESULTS:root:Categories-labels: 
+EXPERIMENTS_RESULTS:root:['anger', 'disgust', 'fear', 'joy', 'others', 'sadness', 'surprise']
+EXPERIMENTS_RESULTS:root:Number of instances for training: 
+EXPERIMENTS_RESULTS:root:5723
+EXPERIMENTS_RESULTS:root:Number of instances for testing: 
+EXPERIMENTS_RESULTS:root:1656
+EXPERIMENTS_RESULTS:root:Found unique tokens: 19192
+EXPERIMENTS_RESULTS:root:Found unique tokens: 19192
+EXPERIMENTS_RESULTS:root:Categories-labels: 
+EXPERIMENTS_RESULTS:root:['anger', 'disgust', 'fear', 'joy', 'others', 'sadness', 'surprise']
+EXPERIMENTS_RESULTS:root:Number of instances for training: 
+EXPERIMENTS_RESULTS:root:5723
+EXPERIMENTS_RESULTS:root:Number of instances for testing: 
+EXPERIMENTS_RESULTS:root:1656
+EXPERIMENTS_RESULTS:root:Found unique tokens: 19192
+EXPERIMENTS_RESULTS:root:Found unique tokens: 19192

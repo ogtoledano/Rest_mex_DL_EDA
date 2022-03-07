@@ -134,7 +134,7 @@ def train_model_adam(dic_param, log_exp_run, wdir, device, tensor_embedding, tra
     fit_param = {
         'patientia': dic_param['sgd_early_stopping_patientia'],
         'min_diference': dic_param['sgd_min_difference'],
-        'checkpoint_path': wdir + "checkpoints/", 'test_data': test_data
+        'checkpoint_path': wdir + "checkpoints/", 'test_data': test_data, 'is_unbalanced': False
     }
 
     checkpoint = Checkpoint(dirname=fit_param['checkpoint_path'], f_params=dic_param['f_params_name'],
@@ -189,10 +189,11 @@ def train_model_adam(dic_param, log_exp_run, wdir, device, tensor_embedding, tra
 
     best_model.set_params(max_epochs=dic_param['epochs'])
     start_time = time.time()
+    # fit_param['is_unbalanced'] = True
     best_model.fit(train_data, fit_param=fit_param)
     log_exp_run.experiments("Time elapsed for Adam : " + str(time.time() - start_time))
     best_model.score(test_data)
-    best_model.score_unbalanced(train_data, print_logs=True)
+    best_model.score(train_data)
     confusion_matrix_chart(best_model.test_accs, best_model.train_accs, best_model.confusion_mtxes, range(dic_param['labels']), dic_param['epochs'], wdir + "experiments/")
     make_txt_file_out("sentiment",test_data,best_model.get_module(),device,wdir + "experiments/")
     log_exp_run.experiments("Adam as optimizer: Process ends successfully!")
