@@ -16,21 +16,21 @@ class ModelCNN(nn.Module):
         )
 
         self.convnet=nn.Sequential(OrderedDict([
-            ('c1',nn.Conv1d(self.word_embedding_size,32,5)),#128
+            ('c1',nn.Conv1d(self.word_embedding_size,128,5)),#32
             ('relu1', nn.ReLU()),
             ('maxpool1', nn.MaxPool1d(5)),
-            ('c2', nn.Conv1d(32, 32, 5)),
+            ('c2', nn.Conv1d(128, 128, 5)),
             ('relu2', nn.ReLU()),
             ('maxpool2', nn.MaxPool1d(5)),
-            ('c3', nn.Conv1d(32, 64, 5)),
+            ('c3', nn.Conv1d(128, 128, 5)),
             ('relu3', nn.ReLU()),
             ('maxpool3', nn.MaxPool1d(35))
         ]))
         # self.dropout=nn.Dropout(p=0.2) # For Dropout regularization
         self.fc = nn.Sequential(OrderedDict([
-            ('f4',nn.Linear(64,64)),
+            ('f4',nn.Linear(128,128)),#64
             ('relu4', nn.ReLU()),
-            ('f5', nn.Linear(64, labels)),
+            ('f5', nn.Linear(128, labels)),
             ('sig5', nn.LogSoftmax(dim=-1))
         ]))
 
