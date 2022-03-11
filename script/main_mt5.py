@@ -24,7 +24,7 @@ if __name__ == "__main__":
     model = T5Model("mt5", "google/mt5-base", args=model_args)
 
     # Train the model
-    model.train_model(train, eval_data=eval)
+    model.train_model(train.astype(str), eval_data=eval.astype(str))
 
     # Optional: Evaluate the model. We'll test it properly anyway.
-    results = model.eval_model(test, verbose=True)
+    results = model.eval_model(test.astype(str), verbose=True)
