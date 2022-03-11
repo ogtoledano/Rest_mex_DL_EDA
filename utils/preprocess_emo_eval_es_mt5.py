@@ -45,7 +45,7 @@ def removing_stop_words(texts):
 
 def build_dataset_and_dict():
     os.chdir('../')
-    wdir = os.getcwd()
+    wdir = os.getcwd() + "/" if not os.path.exists("/content/Rest_mex_DL_EDA/") else "/content/Rest_mex_DL_EDA/"  # only colab
     path_dataset = wdir + "/datasets/emo_eval_es"
     X = []
     y = []
