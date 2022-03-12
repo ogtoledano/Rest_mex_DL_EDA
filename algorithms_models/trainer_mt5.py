@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from utils.logging_custom import make_logger
 
 # Scikit-learn ----------------------------------------------------------+
-from sklearn.metrics import classification_report,accuracy_score
+from sklearn.metrics import classification_report, accuracy_score, mean_absolute_error, f1_score
 from skorch import NeuralNet
 from transformers import AdamW
 from torch.utils.data import DataLoader
@@ -73,6 +73,49 @@ class Trainer(NeuralNet):
                 train_loss += loss.item()
 
         log_exp_run.experiments("Cross-entropy loss for each fold: {}".format(train_loss))
+        return train_loss
+
+    def score_unbalance(self, X, y=None):
+        train_loss = 0
+        iter_data = DataLoader(X, batch_size=self.batch_size, shuffle=True)
+        log_exp_run = make_logger(name="experiment_" + self.mode)
+
+        self.module_.to(self.device)
+        self.module_.eval()
+
+        predictions = []
+        labels = []
+
+        with torch.no_grad():
+            for batch in iter_data:
+                input_ids = batch['source_ids'].to(self.device)
+                attention_mask = batch['attention_mask'].to(self.device)
+                labels = batch['target_ids'].to(self.device)
+                labels[labels == -100] = self.module_.config.pad_token_id
+                output = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask)
+                loss = output[0]
+                train_loss += loss.item()
+
+                outs = self.module_.generate(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    max_length=1,
+                    num_beams=4,
+                )
+
+                preds_batch = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in outs]
+                predictions.extend(preds_batch)
+                labels.extend(labels.cpu().numpy())
+
+        accuracy = accuracy_score(labels, predictions)
+        mae = mean_absolute_error(labels, predictions)
+        macro_f1 = f1_score(labels, predictions, average='macro')
+
+        log_exp_run.experiments("Cross-entropy loss for each fold: {}".format(train_loss))
+        log_exp_run.experiments("Accuracy for each fold: " + str(accuracy))
+        log_exp_run.experiments("\n" + classification_report(labels, predictions))
+        log_exp_run.experiments("\nMean Absolute Error (MAE): " + str(mae))
+        log_exp_run.experiments("\nMacro F1: " + str(macro_f1))
         return train_loss
 
     # Skorch methods: this method fits the estimator by back-propagation and an optimizer

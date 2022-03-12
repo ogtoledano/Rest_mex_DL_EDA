@@ -41,7 +41,7 @@ def train_model_t5_aqg(dic_param, log_exp_run, wdir, device, train_data, test_da
         tokenizer=tokenizer,
         iterator_train__shuffle=True,
         train_split=None,
-        batch_size=dic_param['batch_size'],
+        batch_size=dic_param['sgd_batch_size'],
         device=device,
         callbacks=[checkpoint],
         criterion=torch.nn.CrossEntropyLoss,
@@ -51,6 +51,7 @@ def train_model_t5_aqg(dic_param, log_exp_run, wdir, device, train_data, test_da
     )
 
     trainer.fit(train_data, fit_param=fit_param)
+    trainer.score_unbalance(test_data)
 
     return gscv_best_model
 
