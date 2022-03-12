@@ -110,11 +110,11 @@ def build_dataset_and_dict():
     emo_eval_test = tokenize(emo_eval_test)
     emo_eval_dev = tokenize(emo_eval_dev)
 
-    torch.save(emo_eval_train, wdir + "dataset/dataset_train_emo_eval_mt5")
+    torch.save(emo_eval_train, wdir + "datasets/dataset_train_emo_eval_mt5")
 
-    torch.save(emo_eval_test, wdir + "dataset/dataset_test_emo_eval_mt5")
+    torch.save(emo_eval_test, wdir + "datasets/dataset_test_emo_eval_mt5")
 
-    torch.save(emo_eval_dev, wdir + "dataset/dataset_dev_emo_eval_mt5")
+    torch.save(emo_eval_dev, wdir + "datasets/dataset_dev_emo_eval_mt5")
 
 
 if __name__ == "__main__":
