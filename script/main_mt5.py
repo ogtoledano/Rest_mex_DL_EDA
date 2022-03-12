@@ -1,30 +1,23 @@
-from utils.preprocess_emo_eval_es_mt5 import build_dataset_and_dict
-from simpletransformers.t5 import T5Model, T5Args
+import os
+from utils.file_arguments_reader import load_param_from_file
+
+from script.main_gradient_based_mt5 import train_model_t5_aqg
+from utils.logging_custom import make_logger
+import torch
+from utils.custom_dataloader import CustomDataset
 
 if __name__ == "__main__":
-    train,test,eval = build_dataset_and_dict()
+    # Load train arguments from file
+    os.chdir("../")
+    wdir = os.getcwd() + "/" if not os.path.exists("/content/Rest_mex_DL_EDA/") else "/content/Rest_mex_DL_EDA/"  # only colab
+    dic_param = load_param_from_file(wdir + "script/arguments.txt")
+    log_exp_run = make_logger(name="" + dic_param['name_log_experiments_result'])
+    device = "cuda:" + str(dic_param['cuda_device_id']) if torch.cuda.is_available() else "cpu"
 
-    model_args = T5Args()
-    model_args.max_seq_length = 196
-    model_args.train_batch_size = 8
-    model_args.eval_batch_size = 8
-    model_args.num_train_epochs = 1
-    model_args.evaluate_during_training = False
-    model_args.use_multiprocessing = False
-    model_args.fp16 = False
-    model_args.save_steps = -1
-    model_args.save_eval_checkpoints = False
-    model_args.save_model_every_epoch = False
-    model_args.no_cache = True
-    model_args.reprocess_input_data = True
-    model_args.overwrite_output_dir = True
-    model_args.num_return_sequences = 1
-    model_args.wandb_project = "MT5 mixed tasks"
+    train_dataset = CustomDataset(torch.load(wdir + "/dataset/" + dic_param['dataset_train']))
+    val_dataset = CustomDataset(torch.load(wdir + "/dataset/" + dic_param['dataset_train']))
 
-    model = T5Model("mt5", "google/mt5-base", args=model_args)
+    gscv_best_model = None
+    gscv_best_model, question = train_model_t5_aqg(dic_param, log_exp_run, wdir, device, train_dataset, val_dataset,
+                                                   gscv_best_model)
 
-    # Train the model
-    model.train_model(train.astype(str), eval_data=eval.astype(str))
-
-    # Optional: Evaluate the model. We'll test it properly anyway.
-    results = model.eval_model(test.astype(str), verbose=True)

@@ -83,3 +83,14 @@ class CustomDataLoader(Dataset):
 
     def instances_count(self):
         return len(self.X)
+
+
+class CustomDataset(Dataset):
+    def __init__(self, data):
+        self.data = data
+
+    def __getitem__(self, idx):
+        return {key: torch.tensor(val) for key, val in self.data[idx].items()}
+
+    def __len__(self):
+        return len(self.data)
