@@ -5,7 +5,8 @@ from sklearn.model_selection import GridSearchCV
 from skorch.callbacks import Checkpoint, LoadInitState,EarlyStopping
 
 # ------ Tranformesrs ----------------------------------------------------------+
-from transformers import T5Tokenizer, MT5Model
+from transformers import T5Tokenizer
+from transformers.models.mt5 import MT5ForConditionalGeneration
 import torch
 from transformers import AdamW
 from algorithms_models.trainer_mt5 import Trainer
@@ -33,7 +34,7 @@ def train_model_t5_aqg(dic_param, log_exp_run, wdir, device, train_data, test_da
 
     # Defining skorch-based neural network
     tokenizer = T5Tokenizer.from_pretrained("google/mt5-small")
-    model = MT5Model.from_pretrained("google/mt5-small")
+    model = MT5ForConditionalGeneration.from_pretrained("google/mt5-small")
 
     trainer = Trainer(
         module=model,

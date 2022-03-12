@@ -1,6 +1,6 @@
-dataset_train=dataset_train_emo_eval_nosw
-dataset_test=dataset_test_emo_eval_nosw
-dataset_dev=dataset_dev_emo_eval_nosw
+dataset_train=dataset_train_emo_eval_mt5
+dataset_test=dataset_test_emo_eval_mt5
+dataset_dev=dataset_dev_emo_eval_mt5
 dataset_dictionary=dictionary_emo_eval_nosw
 name_log_experiments_result=experiment_train_emo_eval
 epochs=1

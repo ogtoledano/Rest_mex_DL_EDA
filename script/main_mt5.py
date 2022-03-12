@@ -14,8 +14,8 @@ if __name__ == "__main__":
     log_exp_run = make_logger(name="" + dic_param['name_log_experiments_result'])
     device = "cuda:" + str(dic_param['cuda_device_id']) if torch.cuda.is_available() else "cpu"
 
-    train_dataset = CustomDataset(torch.load(wdir + "/dataset/" + dic_param['dataset_train']))
-    val_dataset = CustomDataset(torch.load(wdir + "/dataset/" + dic_param['dataset_test']))
+    train_dataset = CustomDataset(torch.load(wdir + "/datasets/" + dic_param['dataset_train']))
+    val_dataset = CustomDataset(torch.load(wdir + "/datasets/" + dic_param['dataset_test']))
 
     gscv_best_model = None
     gscv_best_model = train_model_t5_aqg(dic_param, log_exp_run, wdir, device, train_dataset, val_dataset,

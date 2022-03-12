@@ -90,7 +90,7 @@ class CustomDataset(Dataset):
         self.data = data
 
     def __getitem__(self, idx):
-        return {key: torch.tensor(val) for key, val in self.data[idx].items()}
+        return {key: torch.tensor(val[idx]) for key, val in self.data.items()}
 
     def __len__(self):
         return len(self.data)
