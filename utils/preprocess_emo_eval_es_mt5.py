@@ -44,9 +44,8 @@ def tokenize(data):
     target_encoding = tokenizer(
         data['target_text'],
         max_length=1,
-        padding='max_length',
-        pad_to_max_length=True,
-        truncation=True,
+        pad_to_max_length=False,
+        truncation=False,
     )
 
     encodings = {
