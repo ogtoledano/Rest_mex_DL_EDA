@@ -105,10 +105,10 @@ class Trainer(NeuralNet):
 
                 preds_batch = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in outs]
                 labels_batch = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in labels]
-                predictions.extend(outs)
-                labels_ref.extend(labels)
+                predictions.extend(preds_batch)
+                labels_ref.extend(labels_batch)
 
-        log_exp_run.experiments("Predictions \n{}".format(preds_batch))
+        log_exp_run.experiments("Predictions \n{}".format(predictions))
         log_exp_run.experiments("Labels \n{}".format(labels_ref))
 
         accuracy = accuracy_score(labels_ref, predictions)
