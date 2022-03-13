@@ -84,7 +84,7 @@ class Trainer(NeuralNet):
         self.module_.eval()
 
         predictions = []
-        labels = []
+        labels_ref = []
 
         with torch.no_grad():
             for batch in iter_data:
@@ -99,21 +99,25 @@ class Trainer(NeuralNet):
                 outs = self.module_.generate(
                     input_ids=input_ids,
                     attention_mask=attention_mask,
-                    max_length=1,
+                    max_length=2,
                     num_beams=4,
                 )
 
                 preds_batch = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in outs]
-                predictions.extend(preds_batch)
-                labels.extend(labels.cpu().numpy())
+                labels_batch = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in labels]
+                predictions.extend(outs)
+                labels_ref.extend(labels)
 
-        accuracy = accuracy_score(labels, predictions)
-        mae = mean_absolute_error(labels, predictions)
-        macro_f1 = f1_score(labels, predictions, average='macro')
+        log_exp_run.experiments("Predictions \n{}".format(preds_batch))
+        log_exp_run.experiments("Labels \n{}".format(labels_ref))
+
+        accuracy = accuracy_score(labels_ref, predictions)
+        mae = mean_absolute_error(labels_ref, predictions)
+        macro_f1 = f1_score(labels_ref, predictions, average='macro')
 
         log_exp_run.experiments("Cross-entropy loss for each fold: {}".format(train_loss))
         log_exp_run.experiments("Accuracy for each fold: " + str(accuracy))
-        log_exp_run.experiments("\n" + classification_report(labels, predictions))
+        log_exp_run.experiments("\n" + classification_report(labels_ref, predictions))
         log_exp_run.experiments("\nMean Absolute Error (MAE): " + str(mae))
         log_exp_run.experiments("\nMacro F1: " + str(macro_f1))
         return train_loss

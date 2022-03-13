@@ -87,10 +87,12 @@ class CustomDataLoader(Dataset):
 
 class CustomDataset(Dataset):
     def __init__(self, data):
-        self.data = data
+        self.X = data['source_ids']
+        self.y = data['target_ids']
+        self.attention = data['attention_mask']
 
     def __getitem__(self, idx):
-        return {key: torch.tensor(val[idx]) for key, val in self.data.items()}
+        return {'source_ids': torch.tensor(self.X[idx]), 'target_ids': torch.tensor(self.y[idx]), 'attention_mask': torch.tensor(self.attention[idx])}
 
     def __len__(self):
-        return len(self.data)
+        return len(self.X)

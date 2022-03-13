@@ -18,8 +18,10 @@ if __name__ == "__main__":
 
     iter_data = DataLoader(train_dataset, batch_size=3, shuffle=True)
 
-    for batch in iter_data:
-        input_ids = batch['source_ids'].to(device)
-        attention_mask = batch['attention_mask'].to(device)
-        labels = batch['target_ids'].to(device)
+    with torch.no_grad():
+        for batch in iter_data:
+            input_ids = batch['source_ids'].to(device)
+            attention_mask = batch['attention_mask'].to(device)
+            labels = batch['target_ids'].to(device)
+            print(input_ids)
 
