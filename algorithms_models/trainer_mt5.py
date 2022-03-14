@@ -122,7 +122,7 @@ class Trainer(NeuralNet):
         log_exp_run.experiments("\n" + classification_report(labels_ref, predictions))
         log_exp_run.experiments("\nMean Absolute Error (MAE): " + str(mae))
         log_exp_run.experiments("\nMacro F1: " + str(macro_f1))
-        confusion_mtx = sm.confusion_matrix(labels, predictions)
+        confusion_mtx = sm.confusion_matrix(labels_ref, predictions)
         return accuracy, confusion_mtx
 
     # Skorch methods: this method fits the estimator by back-propagation and an optimizer
