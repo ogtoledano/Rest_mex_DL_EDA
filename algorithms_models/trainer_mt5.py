@@ -79,7 +79,7 @@ class Trainer(NeuralNet):
 
     def score_unbalance(self, X, y=None, is_unbalanced=False):
         train_loss = 0
-        iter_data = DataLoader(X, batch_size=self.module__batch_size, sampler=ImbalancedDatasetSamplerMT5(X)) if is_unbalanced else DataLoader(X, batch_size=self.module__batch_size, shuffle=True)
+        iter_data = DataLoader(X, batch_size=self.batch_size, sampler=ImbalancedDatasetSamplerMT5(X)) if is_unbalanced else DataLoader(X, batch_size=self.batch_size, shuffle=True)
         log_exp_run = make_logger(name="experiment_" + self.mode)
 
         self.module_.to(self.device)
