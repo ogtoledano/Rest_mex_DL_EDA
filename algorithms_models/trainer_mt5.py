@@ -16,6 +16,7 @@ from skorch import NeuralNet
 from transformers import AdamW
 from torch.utils.data import DataLoader
 from utils.imbalanced_dataset_sampling_mt5 import ImbalancedDatasetSamplerMT5
+import sklearn.metrics as sm
 
 
 class Trainer(NeuralNet):
@@ -121,7 +122,8 @@ class Trainer(NeuralNet):
         log_exp_run.experiments("\n" + classification_report(labels_ref, predictions))
         log_exp_run.experiments("\nMean Absolute Error (MAE): " + str(mae))
         log_exp_run.experiments("\nMacro F1: " + str(macro_f1))
-        return train_loss
+        confusion_mtx = sm.confusion_matrix(labels, predictions)
+        return accuracy, confusion_mtx
 
     # Skorch methods: this method fits the estimator by back-propagation and an optimizer
     def fit(self, X, y=None, **fit_params):
@@ -210,9 +212,7 @@ class Trainer(NeuralNet):
             self.train_loss_acc.append(train_loss)
 
             # Test acc and confusion matrix  charts
-            test_acc, confusion_mtx = self.score_unbalanced(X=fit_params["test_data"] if fit_params.get('fit_param') is None else
-
-            fit_params["fit_param"]["test_data"], is_unbalanced=False)
+            test_acc, confusion_mtx = self.score_unbalance(X=fit_params["test_data"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["test_data"], is_unbalanced=False)
             self.test_accs.append(test_acc)
             self.confusion_mtxes.append(confusion_mtx)
             self.train_accs.append(accuracy_score(predictions, labels))

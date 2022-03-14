@@ -60,7 +60,7 @@ def train_model_t5_aqg(dic_param, log_exp_run, wdir, device, train_data, test_da
     fit_param = {
         'patientia': dic_param['sgd_early_stopping_patientia'],
         'min_diference': dic_param['sgd_min_difference'],
-        'checkpoint_path': wdir + "checkpoints/", 'is_unbalanced': True
+        'checkpoint_path': wdir + "checkpoints/", 'test_data': test_data, 'is_unbalanced': True
     }
 
     checkpoint = Checkpoint(dirname=fit_param['checkpoint_path'], f_params=dic_param['f_params_name'],
@@ -91,7 +91,7 @@ def train_model_t5_aqg(dic_param, log_exp_run, wdir, device, train_data, test_da
 
     trainer.fit(train_data, fit_param=fit_param)
     trainer.score_unbalance(test_data)
-    trainer.score_unbalanced(train_data, is_unbalanced=True)
+    trainer.score_unbalance(train_data, is_unbalanced=True)
     confusion_matrix_chart(trainer.test_accs, trainer.train_accs, trainer.confusion_mtxes,
                            range(dic_param['labels']), dic_param['epochs'], wdir + "experiments/")
 
