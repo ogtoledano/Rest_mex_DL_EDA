@@ -22,7 +22,7 @@ def train_model_t5_aqg(dic_param, log_exp_run, wdir, device, train_data, test_da
     fit_param = {
         'patientia': dic_param['sgd_early_stopping_patientia'],
         'min_diference': dic_param['sgd_min_difference'],
-        'checkpoint_path': wdir + "checkpoints/"
+        'checkpoint_path': wdir + "checkpoints/", 'is_unbalanced': False
     }
 
     checkpoint = Checkpoint(dirname=fit_param['checkpoint_path'], f_params=dic_param['f_params_name'],

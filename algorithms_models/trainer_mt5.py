@@ -15,6 +15,7 @@ from sklearn.metrics import classification_report, accuracy_score, mean_absolute
 from skorch import NeuralNet
 from transformers import AdamW
 from torch.utils.data import DataLoader
+from utils.imbalanced_dataset_sampling_mt5 import ImbalancedDatasetSamplerMT5
 
 
 class Trainer(NeuralNet):
@@ -135,7 +136,10 @@ class Trainer(NeuralNet):
         self.module_.to(self.device)
         optimizer = self.optimizer_
         criterion = self.criterion_
-        iter_data = DataLoader(X, batch_size=self.batch_size, shuffle=True)
+
+        is_unbalanced = fit_params["is_unbalanced"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["is_unbalanced"]
+
+        iter_data = DataLoader(X, batch_size=self.module__batch_size,sampler=ImbalancedDatasetSamplerMT5(X)) if is_unbalanced else DataLoader(X, batch_size=self.module__batch_size, shuffle=True)
 
         patientia = fit_params["patientia"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["patientia"]
         cont_early_stoping = fit_params["patientia"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["patientia"]
