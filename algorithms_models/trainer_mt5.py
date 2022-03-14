@@ -76,9 +76,9 @@ class Trainer(NeuralNet):
         log_exp_run.experiments("Cross-entropy loss for each fold: {}".format(train_loss))
         return train_loss
 
-    def score_unbalance(self, X, y=None):
+    def score_unbalance(self, X, y=None, is_unbalanced=False):
         train_loss = 0
-        iter_data = DataLoader(X, batch_size=self.batch_size, shuffle=True)
+        iter_data = DataLoader(X, batch_size=self.module__batch_size, sampler=ImbalancedDatasetSamplerMT5(X)) if is_unbalanced else DataLoader(X, batch_size=self.module__batch_size, shuffle=True)
         log_exp_run = make_logger(name="experiment_" + self.mode)
 
         self.module_.to(self.device)
@@ -144,7 +144,7 @@ class Trainer(NeuralNet):
 
         is_unbalanced = fit_params["is_unbalanced"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["is_unbalanced"]
 
-        iter_data = DataLoader(X, batch_size=self.batch_size,sampler=ImbalancedDatasetSamplerMT5(X)) if is_unbalanced else DataLoader(X, batch_size=self.batch_size, shuffle=True)
+        iter_data = DataLoader(X, batch_size=self.batch_size, sampler=ImbalancedDatasetSamplerMT5(X)) if is_unbalanced else DataLoader(X, batch_size=self.batch_size, shuffle=True)
 
         patientia = fit_params["patientia"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["patientia"]
         cont_early_stoping = fit_params["patientia"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["patientia"]
@@ -163,6 +163,8 @@ class Trainer(NeuralNet):
 
         for epoch in range(self.max_epochs):
             train_loss = 0
+            predictions = []
+            labels_ref = []
             self.notify('on_epoch_begin', **on_epoch_kwargs)
             for batch in iter_data:
                 optimizer.zero_grad()
@@ -185,6 +187,19 @@ class Trainer(NeuralNet):
                 loss = outputs[0]
 
                 train_loss += loss.item()
+
+                outs = self.module_.generate(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    max_length=2,
+                    num_beams=4,
+                )
+
+                preds_batch = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in outs]
+                labels_batch = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in labels]
+                predictions.extend(preds_batch)
+                labels_ref.extend(labels_batch)
+
                 #print("Bach loss: {}".format(loss.item()))
                 loss.backward()
                 optimizer.step()
@@ -193,6 +208,14 @@ class Trainer(NeuralNet):
             self.notify('on_epoch_end', **on_epoch_kwargs)
             log_exp_run.experiments("Epoch ran: " + str(epoch) + " loss: " + str(train_loss))
             self.train_loss_acc.append(train_loss)
+
+            # Test acc and confusion matrix  charts
+            test_acc, confusion_mtx = self.score_unbalanced(X=fit_params["test_data"] if fit_params.get('fit_param') is None else
+
+            fit_params["fit_param"]["test_data"], is_unbalanced=False)
+            self.test_accs.append(test_acc)
+            self.confusion_mtxes.append(confusion_mtx)
+            self.train_accs.append(accuracy_score(predictions, labels))
 
         log_exp_run.experiments("Train loss series:")
         log_exp_run.experiments(self.train_loss_acc)
