@@ -40,7 +40,7 @@ class ImbalancedDatasetSamplerMT5(torch.utils.data.sampler.Sampler):
         elif isinstance(dataset, torch.utils.data.Subset):
             return dataset.dataset.imgs[:][1]
         elif isinstance(dataset, torch.utils.data.Dataset):
-            return dataset.y
+            return [val[0] for val in dataset.y]
         else:
             raise NotImplementedError
 

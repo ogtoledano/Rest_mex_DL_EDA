@@ -4,6 +4,7 @@ from utils.logging_custom import make_logger
 import torch
 from utils.custom_dataloader import CustomDataset
 from torch.utils.data import DataLoader
+from utils.imbalanced_dataset_sampling_mt5 import ImbalancedDatasetSamplerMT5
 
 if __name__ == "__main__":
     os.chdir("../")
@@ -16,7 +17,7 @@ if __name__ == "__main__":
     train_dataset = CustomDataset(torch.load(wdir + "/datasets/" + dic_param['dataset_train']))
     val_dataset = CustomDataset(torch.load(wdir + "/datasets/" + dic_param['dataset_test']))
 
-    iter_data = DataLoader(train_dataset, batch_size=3, shuffle=True)
+    iter_data = DataLoader(train_dataset, batch_size=3, sampler=ImbalancedDatasetSamplerMT5(train_dataset))
 
     with torch.no_grad():
         for batch in iter_data:
