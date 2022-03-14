@@ -132,7 +132,12 @@ class Trainer(NeuralNet):
 
         self.X_ = X
 
-        train_loss_acc=[]
+        self.train_loss_acc = []
+
+        self.test_accs = []
+        self.train_accs = []
+        self.confusion_mtxes = []
+
         self.module_.to(self.device)
         optimizer = self.optimizer_
         criterion = self.criterion_
@@ -187,10 +192,10 @@ class Trainer(NeuralNet):
 
             self.notify('on_epoch_end', **on_epoch_kwargs)
             log_exp_run.experiments("Epoch ran: " + str(epoch) + " loss: " + str(train_loss))
-            train_loss_acc.append(train_loss)
+            self.train_loss_acc.append(train_loss)
 
         log_exp_run.experiments("Train loss series:")
-        log_exp_run.experiments(train_loss_acc)
+        log_exp_run.experiments(self.train_loss_acc)
         self.notify('on_train_end', X=X, y=y)
         return self
 
