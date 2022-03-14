@@ -215,7 +215,7 @@ class Trainer(NeuralNet):
             test_acc, confusion_mtx = self.score_unbalance(X=fit_params["test_data"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["test_data"], is_unbalanced=False)
             self.test_accs.append(test_acc)
             self.confusion_mtxes.append(confusion_mtx)
-            self.train_accs.append(accuracy_score(predictions, labels))
+            self.train_accs.append(accuracy_score(labels_ref, predictions))
 
         log_exp_run.experiments("Train loss series:")
         log_exp_run.experiments(self.train_loss_acc)
