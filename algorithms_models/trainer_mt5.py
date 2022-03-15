@@ -114,13 +114,13 @@ class Trainer(NeuralNet):
         log_exp_run.experiments("Labels \n{}".format(labels_ref))
 
         accuracy = accuracy_score(labels_ref, predictions)
-        mae = mean_absolute_error(labels_ref, predictions)
+        # mae = mean_absolute_error(labels_ref, predictions)
         macro_f1 = f1_score(labels_ref, predictions, average='macro')
 
         log_exp_run.experiments("Cross-entropy loss for each fold: {}".format(train_loss))
         log_exp_run.experiments("Accuracy for each fold: " + str(accuracy))
         log_exp_run.experiments("\n" + classification_report(labels_ref, predictions))
-        log_exp_run.experiments("\nMean Absolute Error (MAE): " + str(mae))
+        # log_exp_run.experiments("\nMean Absolute Error (MAE): " + str(mae))
         log_exp_run.experiments("\nMacro F1: " + str(macro_f1))
         confusion_mtx = sm.confusion_matrix(labels_ref, predictions)
         return accuracy, confusion_mtx
