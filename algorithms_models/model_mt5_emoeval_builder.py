@@ -19,7 +19,7 @@ class CustomMT5Model(nn.Module):
 
     def forward(self, input_ids=None, attention_mask=None, labels=None):
         # Extract outputs from the body
-        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
+        outputs = self.model(input_ids=input_ids, labels=labels, attention_mask=attention_mask)
 
         # Add custom layers
         sequence_output = self.dropout(outputs[0])  # outputs[0]=last hidden state
