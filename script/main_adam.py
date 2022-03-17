@@ -14,9 +14,21 @@ from utils.custom_dataloader import CustomDataLoader
 from utils.logging_custom import make_logger
 from utils.file_arguments_reader import load_param_from_file
 from script.main_gradient_based import train_model_adam
+import numpy as np
 
 
 if __name__ == "__main__":
+    # For deterministic results
+    random_seed = 64
+    np.random.seed(random_seed)
+    torch.manual_seed(random_seed)
+
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(random_seed)
+        torch.cuda.manual_seed_all(random_seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+
     # Load train arguments from file
     os.chdir("../")
     wdir = os.getcwd() + "/" if not os.path.exists("/content/Rest_mex_DL_EDA/") else "/content/Rest_mex_DL_EDA/"  # only colab

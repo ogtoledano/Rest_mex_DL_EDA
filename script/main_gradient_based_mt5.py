@@ -9,7 +9,11 @@ from transformers import T5Tokenizer
 from transformers.models.mt5 import MT5ForConditionalGeneration
 import torch
 from transformers import AdamW
+
+from algorithms_models.model_mt5_emoeval_builder import CustomMT5Model
 from algorithms_models.trainer_mt5 import Trainer
+from algorithms_models.trainer_mt5_custom import TrainerMT5Custom
+from algorithms_models import model_mt5_emoeval_builder
 
 from matplotlib import pyplot as plt
 import numpy as np
@@ -76,6 +80,54 @@ def train_model_t5_aqg(dic_param, log_exp_run, wdir, device, train_data, test_da
 
     trainer = Trainer(
         module=model,
+        max_epochs=dic_param['epochs'],
+        tokenizer=tokenizer,
+        iterator_train__shuffle=True,
+        train_split=None,
+        batch_size=dic_param['sgd_batch_size'],
+        device=device,
+        callbacks=[checkpoint],
+        criterion=torch.nn.CrossEntropyLoss,
+        optimizer= AdamW,
+        lr=5e-5,
+        mode="train"
+    )
+
+    trainer.fit(train_data, fit_param=fit_param)
+    trainer.score_unbalance(test_data)
+    trainer.score_unbalance(train_data, is_unbalanced=True)
+    confusion_matrix_chart(trainer.test_accs, trainer.train_accs, trainer.confusion_mtxes,
+                           range(dic_param['labels']), dic_param['epochs'], wdir + "experiments/")
+
+    return gscv_best_model
+
+
+def train_model_t5_custom(dic_param, log_exp_run, wdir, device, train_data, test_data, gscv_best_model):
+    # Defining a param distribution for hyperparameter-tuning for model and fit params
+    param_grid = {
+        'lr': dic_param['alpha_distribution'],
+        'mode': ["train"]
+    }
+
+    fit_param = {
+        'patientia': dic_param['sgd_early_stopping_patientia'],
+        'min_diference': dic_param['sgd_min_difference'],
+        'checkpoint_path': wdir + "checkpoints/", 'test_data': test_data, 'is_unbalanced': True
+    }
+
+    checkpoint = Checkpoint(dirname=fit_param['checkpoint_path'], f_params=dic_param['f_params_name'],
+                            f_optimizer=dic_param['f_optimizer_name'], f_history=dic_param['f_history_name'],
+                            f_criterion=dic_param['f_criterion_name'],
+                            monitor=None)
+
+    load_state = LoadInitState(checkpoint)
+
+    # Defining skorch-based neural network
+    tokenizer = T5Tokenizer.from_pretrained("google/mt5-small")
+
+    trainer = TrainerMT5Custom(
+        module=CustomMT5Model,
+        module__labels=dic_param['labels'],
         max_epochs=dic_param['epochs'],
         tokenizer=tokenizer,
         iterator_train__shuffle=True,

@@ -1,7 +1,7 @@
 import os
 from utils.file_arguments_reader import load_param_from_file
 
-from script.main_gradient_based_mt5 import train_model_t5_aqg
+from script.main_gradient_based_mt5 import train_model_t5_custom
 from utils.logging_custom import make_logger
 import torch
 from utils.custom_dataloader import CustomDataset
@@ -30,6 +30,6 @@ if __name__ == "__main__":
     val_dataset = CustomDataset(torch.load(wdir + "/datasets/" + dic_param['dataset_test']))
 
     gscv_best_model = None
-    gscv_best_model = train_model_t5_aqg(dic_param, log_exp_run, wdir, device, train_dataset, val_dataset,
+    gscv_best_model = train_model_t5_custom(dic_param, log_exp_run, wdir, device, train_dataset, val_dataset,
                                                    gscv_best_model)
 
