@@ -13,6 +13,7 @@ class CustomMT5Model(nn.Module):
 
         # Load Model with given checkpoint and extract its body
         self.model = MT5ForConditionalGeneration.from_pretrained("google/mt5-small")
+        self.config =self.model.config
         self.dropout = nn.Dropout(0.1)
         self.fc = nn.Linear(768, labels)  # load and initialize weights
 
