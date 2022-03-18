@@ -105,11 +105,8 @@ class TrainerMT5Custom(NeuralNet):
 
                 logits = output.logits
                 preds_batch = torch.argmax(logits, dim=-1)
-                predictions.extend(preds_batch)
-                labels_ref.extend(labels_ids)
-
-        log_exp_run.experiments("Predictions \n{}".format(predictions))
-        log_exp_run.experiments("Labels \n{}".format(labels_ref))
+                predictions.extend(preds_batch.cpu().numpy())
+                labels_ref.extend(labels_ids.cpu().numpy())
 
         accuracy = accuracy_score(labels_ref, predictions)
         # mae = mean_absolute_error(labels_ref, predictions)
@@ -192,8 +189,8 @@ class TrainerMT5Custom(NeuralNet):
                 logits = outputs.logits
                 preds_batch = torch.argmax(logits, dim=-1)
                 #labels_batch = [int(self.tokenizer.decode(ids, skip_special_tokens=True)) for ids in labels]
-                predictions.extend(preds_batch)
-                labels_ref.extend(labels_ids)
+                predictions.extend(preds_batch.cpu().numpy())
+                labels_ref.extend(labels_ids.cpu().numpy())
 
                 #print("Bach loss: {}".format(loss.item()))
                 loss.backward()

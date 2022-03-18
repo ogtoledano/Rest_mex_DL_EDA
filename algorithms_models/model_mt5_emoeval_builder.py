@@ -26,7 +26,8 @@ class CustomMT5Model(nn.Module):
         sequence_output = sequence_output[:, 0, :]
         sequence_output = torch.reshape(sequence_output,(-1, 512))
         logits = self.fc(sequence_output)  # calculate losses torch.reshape(sequence_output,(-1, 4096))
-
+        logits = torch.tanh(logits)
+        logits = self.dropout(logits)
         loss = None
         if labels is not None:
             loss_fct = nn.CrossEntropyLoss()
