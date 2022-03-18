@@ -50,9 +50,10 @@ class TrainerMT5Custom(NeuralNet):
         input_ids = X['source_ids'].to(self.device)
         attention_mask = X['attention_mask'].to(self.device)
         labels = X['target_ids'].to(self.device)
+        labels_ids = X['labels'].to(self.device)
         labels[labels == -100] = self.module_.config.pad_token_id
         self.module_.to(self.device)
-        output = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask)
+        output = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask, labels_ids=labels_ids)
         logits = output.logits
         predictions = torch.argmax(logits, dim=-1)
         return predictions
@@ -71,8 +72,9 @@ class TrainerMT5Custom(NeuralNet):
                 input_ids = batch['source_ids'].to(self.device)
                 attention_mask = batch['attention_mask'].to(self.device)
                 labels = batch['target_ids'].to(self.device)
+                labels_ids = batch['labels'].to(self.device)
                 labels[labels == -100] = self.module_.config.pad_token_id
-                output = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask)
+                output = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask, labels_ids=labels_ids)
                 loss = output.loss
                 train_loss += loss.item()
 
@@ -95,16 +97,16 @@ class TrainerMT5Custom(NeuralNet):
                 input_ids = batch['source_ids'].to(self.device)
                 attention_mask = batch['attention_mask'].to(self.device)
                 labels = batch['target_ids'].to(self.device)
+                labels_ids = batch['labels'].to(self.device)
                 labels[labels == -100] = self.module_.config.pad_token_id
-                output = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask)
+                output = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask, labels_ids=labels_ids)
                 loss = output.loss
                 train_loss += loss.item()
 
                 logits = output.logits
                 preds_batch = torch.argmax(logits, dim=-1)
-                labels_batch = [int(self.tokenizer.decode(ids, skip_special_tokens=True)) for ids in labels]
                 predictions.extend(preds_batch)
-                labels_ref.extend(labels_batch)
+                labels_ref.extend(labels_ids)
 
         log_exp_run.experiments("Predictions \n{}".format(predictions))
         log_exp_run.experiments("Labels \n{}".format(labels_ref))
@@ -176,7 +178,7 @@ class TrainerMT5Custom(NeuralNet):
                 """
                 labels[labels == -100] = self.module_.config.pad_token_id
                 self.notify("on_batch_begin", X=input_ids, y=labels, training=True)
-                outputs = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask,labels_ids=labels_ids)
+                outputs = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask, labels_ids=labels_ids)
                 """
                 lprobs = torch.nn.functional.log_softmax(outputs[1], dim=-1)
                 loss, nll_loss = label_smoothed_nll_loss(
@@ -189,9 +191,9 @@ class TrainerMT5Custom(NeuralNet):
 
                 logits = outputs.logits
                 preds_batch = torch.argmax(logits, dim=-1)
-                labels_batch = [int(self.tokenizer.decode(ids, skip_special_tokens=True)) for ids in labels]
+                #labels_batch = [int(self.tokenizer.decode(ids, skip_special_tokens=True)) for ids in labels]
                 predictions.extend(preds_batch)
-                labels_ref.extend(labels_batch)
+                labels_ref.extend(labels_ids)
 
                 #print("Bach loss: {}".format(loss.item()))
                 loss.backward()

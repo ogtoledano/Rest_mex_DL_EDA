@@ -33,5 +33,5 @@ class CustomMT5Model(nn.Module):
             logits=logits.view(-1, self.labels)
             loss = loss_fct(logits, labels_ids.view(-1))
 
-        return TokenClassifierOutput(loss=loss, logits=logits, hidden_states=outputs.hidden_states,
-                                     attentions=outputs.attentions)
+        return TokenClassifierOutput(loss=loss, logits=logits, hidden_states=outputs.encoder_last_hidden_state,
+                                     attentions=outputs.encoder_attentions)
