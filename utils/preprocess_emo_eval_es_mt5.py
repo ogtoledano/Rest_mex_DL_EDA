@@ -15,6 +15,7 @@ import sys
 
 from nltk.corpus import stopwords
 from transformers import T5Tokenizer,AutoTokenizer
+import numpy as np
 
 
 def removing_stop_words(texts):
@@ -43,15 +44,18 @@ def tokenize(data):
 
     target_encoding = tokenizer(
         data['target_text'],
-        max_length=1,
+        max_length=2,
         pad_to_max_length=False,
         truncation=False,
     )
+
+    data['target_text'] = [int(value) for value in data['target_text']]
 
     encodings = {
         'source_ids': source_encoding['input_ids'],
         'target_ids': target_encoding['input_ids'],
         'attention_mask': source_encoding['attention_mask'],
+        'labels': torch.tensor(data['target_text'], dtype=torch.long)
     }
 
     return encodings

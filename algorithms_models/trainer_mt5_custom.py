@@ -169,13 +169,14 @@ class TrainerMT5Custom(NeuralNet):
                 input_ids = batch['source_ids'].to(self.device)
                 attention_mask = batch['attention_mask'].to(self.device)
                 labels = batch['target_ids'].to(self.device)
+                labels_ids = batch['labels'].to(self.device)
                 """
                 if self.device == 'cuda:0':
                     print(torch.cuda.memory_summary(device=None, abbreviated=False))
                 """
                 labels[labels == -100] = self.module_.config.pad_token_id
                 self.notify("on_batch_begin", X=input_ids, y=labels, training=True)
-                outputs = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask)
+                outputs = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask,labels_ids=labels_ids)
                 """
                 lprobs = torch.nn.functional.log_softmax(outputs[1], dim=-1)
                 loss, nll_loss = label_smoothed_nll_loss(

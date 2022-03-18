@@ -89,10 +89,11 @@ class CustomDataset(Dataset):
     def __init__(self, data):
         self.X = data['source_ids']
         self.y = data['target_ids']
+        self.labels=data['labels']
         self.attention = data['attention_mask']
 
     def __getitem__(self, idx):
-        return {'source_ids': torch.tensor(self.X[idx]), 'target_ids': torch.tensor(self.y[idx]), 'attention_mask': torch.tensor(self.attention[idx])}
+        return {'source_ids': torch.tensor(self.X[idx]), 'target_ids': torch.tensor(self.y[idx]), 'attention_mask': torch.tensor(self.attention[idx]), 'labels': torch.tensor(self.labels[idx])}
 
     def __len__(self):
         return len(self.X)
