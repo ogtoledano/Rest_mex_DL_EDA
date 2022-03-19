@@ -137,7 +137,7 @@ def train_model_t5_custom(dic_param, log_exp_run, wdir, device, train_data, test
         callbacks=[checkpoint],
         criterion=torch.nn.CrossEntropyLoss,
         optimizer= AdamW,
-        lr=5e-5,
+        lr=6e-5,
         mode="train"
     )
 
