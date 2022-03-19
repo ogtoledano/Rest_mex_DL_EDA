@@ -15,7 +15,8 @@ class CustomMT5Model(nn.Module):
         self.model = MT5ForConditionalGeneration.from_pretrained("google/mt5-small")
         self.config =self.model.config
         self.dropout = nn.Dropout(0.1)
-        self.fc = nn.Linear(512, labels)  # load and initialize weights
+        self.fc = nn.Linear(512, 64)  # load and initialize weights
+        self.dense = nn.Linear(64, labels)
 
     def forward(self, input_ids=None, attention_mask=None, labels=None, labels_ids=None):
         # Extract outputs from the body
@@ -28,6 +29,8 @@ class CustomMT5Model(nn.Module):
         logits = self.fc(sequence_output)  # calculate losses torch.reshape(sequence_output,(-1, 4096))
         logits = torch.tanh(logits)
         logits = self.dropout(logits)
+        logits = self.dense(logits)
+        logits = torch.relu(logits)
         loss = None
         if labels is not None:
             loss_fct = nn.CrossEntropyLoss()
