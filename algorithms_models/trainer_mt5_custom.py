@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from utils.logging_custom import make_logger
 
 # Scikit-learn ----------------------------------------------------------+
-from sklearn.metrics import classification_report, accuracy_score, mean_absolute_error, f1_score
+from sklearn.metrics import classification_report, precision_recall_fscore_support, f1_score, accuracy_score
 from skorch import NeuralNet
 from transformers import AdamW
 from torch.utils.data import DataLoader
@@ -81,6 +81,15 @@ class TrainerMT5Custom(NeuralNet):
         log_exp_run.experiments("Cross-entropy loss for each fold: {}".format(train_loss))
         return train_loss
 
+    def compute_metrics(self, labels, preds):
+
+        precision, recall, f1, _ = precision_recall_fscore_support(labels, preds, average='weighted', zero_division=0)
+        return {
+            'f1': f1,
+            'precision': precision,
+            'recall': recall
+        }
+
     def score_unbalance(self, X, y=None, is_unbalanced=False):
         train_loss = 0
         iter_data = DataLoader(X, batch_size=self.batch_size, sampler=ImbalancedDatasetSamplerMT5(X)) if is_unbalanced else DataLoader(X, batch_size=self.batch_size, shuffle=True)
@@ -118,6 +127,8 @@ class TrainerMT5Custom(NeuralNet):
         # log_exp_run.experiments("\nMean Absolute Error (MAE): " + str(mae))
         log_exp_run.experiments("\nMacro F1: " + str(macro_f1))
         confusion_mtx = sm.confusion_matrix(labels_ref, predictions)
+        metrics = self.compute_metrics(labels_ref,predictions)
+        log_exp_run.experiments("All metrics (weighted) \nF1= {}, precision= {}, recall= {}".format(metrics['f1'], metrics['precision'], metrics['recall']))
         return accuracy, confusion_mtx
 
     # Skorch methods: this method fits the estimator by back-propagation and an optimizer
@@ -143,9 +154,6 @@ class TrainerMT5Custom(NeuralNet):
 
         iter_data = DataLoader(X, batch_size=self.batch_size, sampler=ImbalancedDatasetSamplerMT5(X)) if is_unbalanced else DataLoader(X, batch_size=self.batch_size, shuffle=True)
 
-        patientia = fit_params["patientia"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["patientia"]
-        cont_early_stoping = fit_params["patientia"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["patientia"]
-        min_diference = fit_params["min_diference"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["min_diference"]
         self.notify('on_train_begin', X=X, y=y)
 
         isinstance(optimizer,AdamW)
@@ -169,19 +177,11 @@ class TrainerMT5Custom(NeuralNet):
                 attention_mask = batch['attention_mask'].to(self.device)
                 labels = batch['target_ids'].to(self.device)
                 labels_ids = batch['labels'].to(self.device)
-                """
-                if self.device == 'cuda:0':
-                    print(torch.cuda.memory_summary(device=None, abbreviated=False))
-                """
+
                 labels[labels == -100] = self.module_.config.pad_token_id
                 self.notify("on_batch_begin", X=input_ids, y=labels, training=True)
                 outputs = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask, labels_ids=labels_ids)
-                """
-                lprobs = torch.nn.functional.log_softmax(outputs[1], dim=-1)
-                loss, nll_loss = label_smoothed_nll_loss(
-                    lprobs, labels, 1, ignore_index=model.config.pad_token_id
-                )
-                """
+
                 loss = outputs.loss
 
                 train_loss += loss.item()
@@ -191,8 +191,6 @@ class TrainerMT5Custom(NeuralNet):
                 #labels_batch = [int(self.tokenizer.decode(ids, skip_special_tokens=True)) for ids in labels]
                 predictions.extend(preds_batch.cpu().numpy())
                 labels_ref.extend(labels_ids.cpu().numpy())
-
-                #print("Bach loss: {}".format(loss.item()))
                 loss.backward()
                 optimizer.step()
                 self.notify("on_batch_end", X=input_ids, y=labels, training=True)

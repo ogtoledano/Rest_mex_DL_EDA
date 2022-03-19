@@ -136,8 +136,10 @@ def train_model_t5_custom(dic_param, log_exp_run, wdir, device, train_data, test
         device=device,
         callbacks=[checkpoint],
         criterion=torch.nn.CrossEntropyLoss,
-        optimizer= AdamW,
+        optimizer=AdamW,
         lr=6e-5,
+        optimizer__warmup_steps=dic_param['warmup_steps'],
+        optimizer__weight_decay=dic_param['weight_decay'],
         mode="train"
     )
 
