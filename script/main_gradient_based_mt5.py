@@ -8,7 +8,7 @@ from skorch.callbacks import Checkpoint, LoadInitState,EarlyStopping
 from transformers import T5Tokenizer
 from transformers.models.mt5 import MT5ForConditionalGeneration
 import torch
-from transformers import AdamW
+from torch.optim import AdamW
 
 from algorithms_models.model_mt5_emoeval_builder import CustomMT5Model
 from algorithms_models.trainer_mt5 import Trainer
@@ -138,7 +138,6 @@ def train_model_t5_custom(dic_param, log_exp_run, wdir, device, train_data, test
         criterion=torch.nn.CrossEntropyLoss,
         optimizer=AdamW,
         lr=6e-5,
-        optimizer__warmup_steps=dic_param['warmup_steps'],
         optimizer__weight_decay=dic_param['weight_decay'],
         mode="train"
     )
