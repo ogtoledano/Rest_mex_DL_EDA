@@ -60,3 +60,15 @@ EXPERIMENTS_RESULTS:root:Number of instances for testing:
 EXPERIMENTS_RESULTS:root:1656
 EXPERIMENTS_RESULTS:root:Found unique tokens: 19192
 EXPERIMENTS_RESULTS:root:Found unique tokens: 19192
+EXPERIMENTS_RESULTS:root:Number of instances for training: 
+EXPERIMENTS_RESULTS:root:24169
+EXPERIMENTS_RESULTS:root:Number of instances for dev set: 
+EXPERIMENTS_RESULTS:root:6043
+EXPERIMENTS_RESULTS:root:Number of instances for training: 
+EXPERIMENTS_RESULTS:root:24169
+EXPERIMENTS_RESULTS:root:Number of instances for dev set: 
+EXPERIMENTS_RESULTS:root:6043
+EXPERIMENTS_RESULTS:root:Number of instances for training: 
+EXPERIMENTS_RESULTS:root:24169
+EXPERIMENTS_RESULTS:root:Number of instances for dev set: 
+EXPERIMENTS_RESULTS:root:6043
