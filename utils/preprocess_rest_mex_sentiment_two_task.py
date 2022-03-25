@@ -87,7 +87,7 @@ def build_dataset_and_dict():
     for i in range(df.shape[0]):
         whole_text = str(df.iloc[i, 0]) + ": " + str(df.iloc[i, 1])
         X.append(whole_text)
-        y.append((str(df.iloc[i, 2]), str(atractions[df.iloc[i, 3]])))
+        y.append((str(df.iloc[i, 2]-1), str(atractions[df.iloc[i, 3]])))
 
     X_train, X_dev, y_train, y_dev = train_test_split(X, y, test_size=0.20, random_state=142)
     stt_train = {'input_text': X_train, 'target_text': y_train}
