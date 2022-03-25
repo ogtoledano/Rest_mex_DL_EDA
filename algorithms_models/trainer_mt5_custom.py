@@ -151,6 +151,7 @@ class TrainerMT5Custom(NeuralNet):
         criterion = self.criterion_
 
         is_unbalanced = fit_params["is_unbalanced"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["is_unbalanced"]
+        task = fit_params["task"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["task"]
 
         iter_data = DataLoader(X, batch_size=self.batch_size, sampler=ImbalancedDatasetSamplerMT5(X)) if is_unbalanced else DataLoader(X, batch_size=self.batch_size, shuffle=True)
 
@@ -175,8 +176,8 @@ class TrainerMT5Custom(NeuralNet):
                 optimizer.zero_grad()
                 input_ids = batch['source_ids'].to(self.device)
                 attention_mask = batch['attention_mask'].to(self.device)
-                labels = batch['target_ids'].to(self.device)
-                labels_ids = batch['labels'].to(self.device)
+                labels = batch['target_ids'].to(self.device) if task == 'main' else batch['target_ids_attraction'].to(self.device)
+                labels_ids = batch['labels'].to(self.device) if task == 'main' else batch['labels_attraction'].to(self.device)
 
                 labels[labels == -100] = self.module_.config.pad_token_id
                 self.notify("on_batch_begin", X=input_ids, y=labels, training=True)
