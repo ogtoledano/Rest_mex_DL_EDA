@@ -97,3 +97,20 @@ class CustomDataset(Dataset):
 
     def __len__(self):
         return len(self.X)
+
+
+class CustomDatasetRestMexTwoTask(Dataset):
+    def __init__(self, data):
+        self.X = data['source_ids']
+        self.y = data['target_ids']
+        self.y_attraction= data['target_ids_attraction']
+        self.labels=data['labels']
+        self.labels_attraction=data['labels_attraction']
+        self.attention = data['attention_mask']
+
+    def __getitem__(self, idx):
+        return {'source_ids': torch.tensor(self.X[idx]), 'target_ids': torch.tensor(self.y[idx]), 'attention_mask': torch.tensor(self.attention[idx]),
+                'labels': self.labels[idx], 'target_ids_attraction': self.y_attraction[idx], 'labels_attraction': self.labels_attraction[idx]}
+
+    def __len__(self):
+        return len(self.X)
