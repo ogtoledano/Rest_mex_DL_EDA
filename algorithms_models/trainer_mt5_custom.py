@@ -90,7 +90,7 @@ class TrainerMT5Custom(NeuralNet):
             'recall': recall
         }
 
-    def score_unbalance(self, X, y=None, is_unbalanced=False):
+    def score_unbalance(self, X, y=None, is_unbalanced=False, task='main'):
         train_loss = 0
         iter_data = DataLoader(X, batch_size=self.batch_size, sampler=ImbalancedDatasetSamplerMT5(X)) if is_unbalanced else DataLoader(X, batch_size=self.batch_size, shuffle=True)
         log_exp_run = make_logger(name="experiment_" + self.mode)
@@ -105,8 +105,8 @@ class TrainerMT5Custom(NeuralNet):
             for batch in iter_data:
                 input_ids = batch['source_ids'].to(self.device)
                 attention_mask = batch['attention_mask'].to(self.device)
-                labels = batch['target_ids'].to(self.device)
-                labels_ids = batch['labels'].to(self.device)
+                labels = batch['target_ids'].to(self.device) if task == 'main' else batch['target_ids_attraction'].to(self.device)
+                labels_ids = batch['labels'].to(self.device) if task == 'main' else batch['labels_attraction'].to(self.device)
                 labels[labels == -100] = self.module_.config.pad_token_id
                 output = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask, labels_ids=labels_ids)
                 loss = output.loss
