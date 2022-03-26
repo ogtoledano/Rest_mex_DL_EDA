@@ -1,0 +1,95 @@
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300205447
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300205447
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300205447
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300205447
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300205447
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300205447
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300205447
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300205447
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
+EXPERIMENTS_RESULTS:root:Loaded spanish word embedding model with GloVe:
+EXPERIMENTS_RESULTS:root:EMBEDDING_SIZE: 300
+EXPERIMENTS_RESULTS:root:DICTIONARY LENGTH: 100000
+EXPERIMENTS_RESULTS:root:Time elapsed for loading embedding vectors from file: 0.9686808586120605
+EXPERIMENTS_RESULTS:root:Length of dictionary of dataset: 19192
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: Adam
+EXPERIMENTS_RESULTS:root:GridSearch using k-fold cross validation with for Adam
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: Adam
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: Adam
+EXPERIMENTS_RESULTS:root:Amount of parameters: 373639
+EXPERIMENTS_RESULTS:root:Run using Adam as optimizer
+EXPERIMENTS_RESULTS:root:lr: 0.00195
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300205447
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300180359
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300180359
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300180359
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300180359
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300180359
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300180359
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
+EXPERIMENTS_RESULTS:root:Running on device: cpu
+EXPERIMENTS_RESULTS:root:Training model by Back-propagation with optimizer: train
+EXPERIMENTS_RESULTS:root:Amount of parameters: 300180359
+EXPERIMENTS_RESULTS:root:Run using AdamW as optimizer
+EXPERIMENTS_RESULTS:root:lr: 5e-05
