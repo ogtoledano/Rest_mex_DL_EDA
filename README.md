@@ -6,7 +6,11 @@
 
 This project allows text categorization/sentiment analysis for Spanish tweets. For this purpose, a new optimization method based on Estimation of Distributions Algorithms (EDA) is introduced for the fine-tuning of Transformers. A MT5-base model is used
 
+Colab Notebook Emoeval:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1pEFVMd4IWjLZ_Xg9Kc2deuC-FsgbYeZW?usp=sharing)[![visitors](https://visitor-badge.vercel.app/p/Rest_mex_DL_EDA?color=brightgreen)](https://github.com/ogtoledano/Rest_mex_DL_EDA)
+
+Colab REST-MEX 2022 Sentiment Analaysis two subtasks
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1A9Rrj5ATODW7bY81EQ28bwhsd1lsVSCC?usp=sharing)[![visitors](https://visitor-badge.vercel.app/p/Rest_mex_DL_EDA?color=brightgreen)](https://github.com/ogtoledano/Rest_mex_DL_EDA)
 
 *********** update at March 21, 2022 *************
 
