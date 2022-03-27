@@ -7,6 +7,12 @@ def make_txt_file_out(task,X,model, device, url_file):
     f.close()
 
 
+def make_txt_file_out_two_task(X, model1, model2, device, url_file):
+    f = open(url_file+"output_sentiment.txt", "a")
+    f.write(score_sentiment_two_task(X,model1, model2, device))
+    f.close()
+
+
 def score_sentiment(X, model, device):
     model.to(device)
     model.eval()

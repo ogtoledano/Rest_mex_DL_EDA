@@ -45,6 +45,9 @@ class TrainerMT5Custom(NeuralNet):
         """
         return self
 
+    def get_module(self):
+        return self.module_
+
     # Sci-kit methods
     def predict(self, X):
         input_ids = X['source_ids'].to(self.device)
