@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from utils.logging_custom import make_logger
 
 # Scikit-learn ----------------------------------------------------------+
-from sklearn.metrics import classification_report, precision_recall_fscore_support, f1_score, accuracy_score
+from sklearn.metrics import classification_report, precision_recall_fscore_support, f1_score, accuracy_score, mean_absolute_error
 from skorch import NeuralNet
 from transformers import AdamW
 from torch.utils.data import DataLoader
@@ -121,13 +121,13 @@ class TrainerMT5Custom(NeuralNet):
                 labels_ref.extend(labels_ids.cpu().numpy())
 
         accuracy = accuracy_score(labels_ref, predictions)
-        # mae = mean_absolute_error(labels_ref, predictions)
+        mae = mean_absolute_error(labels_ref, predictions)
         macro_f1 = f1_score(labels_ref, predictions, average='macro')
 
         log_exp_run.experiments("Cross-entropy loss for each fold: {}".format(train_loss))
         log_exp_run.experiments("Accuracy for each fold: " + str(accuracy))
         log_exp_run.experiments("\n" + classification_report(labels_ref, predictions))
-        # log_exp_run.experiments("\nMean Absolute Error (MAE): " + str(mae))
+        log_exp_run.experiments("\nMean Absolute Error (MAE): " + str(mae))
         log_exp_run.experiments("\nMacro F1: " + str(macro_f1))
         confusion_mtx = sm.confusion_matrix(labels_ref, predictions)
         metrics = self.compute_metrics(labels_ref,predictions)
