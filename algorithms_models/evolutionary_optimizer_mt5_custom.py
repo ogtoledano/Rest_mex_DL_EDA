@@ -116,6 +116,9 @@ class EDA_Optimizer(NeuralNet):
         path = fit_params["fit_param"]["checkpoint"].split('.')[0] +"_"+self.mode+".pt"
         self.individuals=fit_params["fit_param"]["population_size"]
 
+        is_unbalanced = fit_params["is_unbalanced"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["is_unbalanced"]
+        task = fit_params["task"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["task"]
+
         if self.mode == "EDA_EMNA":
             log_exp_run.experiments("Training with EDA_EMNA...")
             start_time = time.time()
@@ -125,7 +128,7 @@ class EDA_Optimizer(NeuralNet):
         if self.mode == "EDA_CMA_ES":
             log_exp_run.experiments("Training with EDA_CMA_ES...")
             start_time = time.time()
-            self.train_eda_cma_es_early_stopping(self.sigma, self.centroid, fit_params["fit_param"]["generations"], X)
+            self.train_eda_cma_es_early_stopping(self.sigma, self.centroid, fit_params["fit_param"]["generations"], X, is_unbalanced, task)
             log_exp_run.experiments("Time elapsed for EDA_CMA_ES: " + str(time.time() - start_time))
 
         if self.mode == "EDA_CUMDA":
@@ -366,15 +369,15 @@ class EDA_Optimizer(NeuralNet):
         log_exp_run.experiments(list(series_fitness))
 
     # Training tensor model using CMA-ES as EDA algorithms, with early stopping
-    def train_eda_cma_es_early_stopping(self, sigma, centroid, generations, data):
+    def train_eda_cma_es_early_stopping(self, sigma, centroid, generations, data, is_unbalanced=False, task="main"):
         log_exp_run = make_logger(name="experiment_" + self.mode)
-        iter_data = DataLoader(data, batch_size=self.module__batch_size, shuffle=True)
+        iter_data = DataLoader(data, batch_size=self.batch_size, sampler=ImbalancedDatasetSamplerMT5(data)) if is_unbalanced else DataLoader(data, batch_size=self.batch_size, shuffle=True)
         # LAMBDA is the size of the population
         # N is the size of individual, the number of parameters on ANN
         N, LAMBDA = self.param_length, self.individuals
 
         toolbox = base.Toolbox()
-        toolbox.register("evaluate", loss_function, model=self.module_, training_data=iter_data, device=self.device)
+        toolbox.register("evaluate", loss_function, model=self.module_, training_data=iter_data, device=self.device, task=task)
         np.random.seed(int(time.time()))
 
         # creating an instance of CMA
@@ -499,7 +502,7 @@ class EDA_Optimizer(NeuralNet):
 
 
 #  Compute loss with examples giving a single individual and Tensor model
-def loss_function(individual, model, training_data, device):
+def loss_function(individual, model, training_data, device, task):
     fix_individual_to_fln_layers(individual, model, device)
     train_loss = 0
     model.to(device)
@@ -508,8 +511,8 @@ def loss_function(individual, model, training_data, device):
         for batch in training_data:
             input_ids = batch['source_ids'].to(device)
             attention_mask = batch['attention_mask'].to(device)
-            labels = batch['target_ids'].to(device)
-            labels_ids = batch['labels'].to(device)
+            labels = batch['target_ids'].to(device) if task == 'main' else batch['target_ids_attraction'].to(device)
+            labels_ids = batch['labels'].to(device) if task == 'main' else batch['labels_attraction'].to(device)
             labels[labels == -100] = model.config.pad_token_id
             output = model(input_ids=input_ids, labels=labels, attention_mask=attention_mask, labels_ids=labels_ids)
             loss = output.loss
