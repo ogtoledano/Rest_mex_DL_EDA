@@ -73,7 +73,7 @@ class EDA_Optimizer(NeuralNet):
     def initialize_module(self,*args,**kargs):
         super().initialize_module(*args, **kargs)
         #self.param_length = sum([p.numel() for p in self.module_.parameters() if p.requires_grad])
-        fc_pathern = re.compile("fc\w*") # matching only with full connected layers (fc)
+        fc_pathern = re.compile("dense\w*") # matching only with full connected layers (fc)
         self.param_length = sum([p.numel() for name, p in self.module_.named_parameters() if p.requires_grad and fc_pathern.match(name)])
         log_exp_run = make_logger(name="experiment_" + self.mode)
         log_exp_run.experiments("Amount of parameters: " + str(self.param_length))
@@ -597,7 +597,7 @@ def fix_individual_to_fc_layers(individual, model, device):
     individual_tensor = torch.tensor(individual)
     individual_tensor.to(device)
     model.to(device)
-    fc_pathern = re.compile("fc\w*") # matching only with full connected layers (fc)
+    fc_pathern = re.compile("dense\w*") # matching only with full connected layers (fc)
     for name, p in model.named_parameters():
         if p.requires_grad and fc_pathern.match(name):
             len_p = p.numel()
