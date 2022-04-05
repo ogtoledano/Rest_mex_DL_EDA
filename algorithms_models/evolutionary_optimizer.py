@@ -32,14 +32,15 @@ from numpy import random
 
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from utils.imbalanced_dataset_sampling import ImbalancedDatasetSampler
 
 # Scikit-learn ----------------------------------------------------------+
-from sklearn.metrics import classification_report, accuracy_score, mean_absolute_error, f1_score
+from sklearn.metrics import classification_report, precision_recall_fscore_support, f1_score, accuracy_score
 from skorch import NeuralNet
+import sklearn.metrics as sm
+from utils.imbalanced_dataset_sampling_mt5 import ImbalancedDatasetSamplerMT5
 import os
 #--- CONSTANTS ----------------------------------------------------------------+
-import sklearn.metrics as sm
+
 
 # Defining the optimization problem as argmin(lossFuntion) and the individual
 # with continuous codification as update rules for weight based on evolutionary algorithms
@@ -50,7 +51,7 @@ creator.create("Individual", list, fitness=creator.FitnessMin)
 
 class EDA_Optimizer(NeuralNet):
 
-    def __init__(self,*args,mode="EDA_EMNA",centroid=0.5,sigma=0.8,individuals=10,generations=5,param_length=0,**kargs):
+    def __init__(self,*args,mode="EDA_EMNA",centroid=0.5,sigma=0.8,individuals=10,generations=5,param_length=0,batch_size=28,tokenizer,**kargs):
         super().__init__(*args, **kargs)
         #self.device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.mode = mode
@@ -61,6 +62,8 @@ class EDA_Optimizer(NeuralNet):
         self.generations=generations
         self.param_length=param_length
         self.individuals=individuals
+        self.batch_size=batch_size
+        self.tokenizer = tokenizer
 
     # Train mode is: "SGD","SGD_MINI_BATCH","EDA_EMNA","EDA_CMA_ES"
     def set_train_mode(self, mode):
@@ -73,7 +76,7 @@ class EDA_Optimizer(NeuralNet):
     def initialize_module(self,*args,**kargs):
         super().initialize_module(*args, **kargs)
         #self.param_length = sum([p.numel() for p in self.module_.parameters() if p.requires_grad])
-        fc_pathern = re.compile("fc\w*") # matching only with full connected layers (fc)
+        fc_pathern = re.compile("fc\w*") # matching only with full final_layer_norm layers (fc)
         self.param_length = sum([p.numel() for name, p in self.module_.named_parameters() if p.requires_grad and fc_pathern.match(name)])
         log_exp_run = make_logger(name="experiment_" + self.mode)
         log_exp_run.experiments("Amount of parameters: " + str(self.param_length))
@@ -81,6 +84,19 @@ class EDA_Optimizer(NeuralNet):
 
     def get_module(self):
         return self.module_
+
+    # Sci-kit methods
+    def predict(self, X):
+        input_ids = X['source_ids'].to(self.device)
+        attention_mask = X['attention_mask'].to(self.device)
+        labels = X['target_ids'].to(self.device)
+        labels_ids = X['labels'].to(self.device)
+        labels[labels == -100] = self.module_.config.pad_token_id
+        self.module_.to(self.device)
+        output = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask, labels_ids=labels_ids)
+        logits = output.logits
+        predictions = torch.argmax(logits, dim=-1)
+        return predictions
 
     # Sckorch methods: this method fits the estimator using a determinate way defined by
     # mode attr. The main modes for training are: EDA_EMNA, EDA_CMA_ES, EDA_CUMDA for all
@@ -100,10 +116,6 @@ class EDA_Optimizer(NeuralNet):
         path = fit_params["fit_param"]["checkpoint"].split('.')[0] +"_"+self.mode+".pt"
         self.individuals=fit_params["fit_param"]["population_size"]
 
-        self.test_accs = []
-        self.train_accs = []
-        self.confusion_mtxes = []
-
         if self.mode == "EDA_EMNA":
             log_exp_run.experiments("Training with EDA_EMNA...")
             start_time = time.time()
@@ -113,16 +125,16 @@ class EDA_Optimizer(NeuralNet):
         if self.mode == "EDA_CMA_ES":
             log_exp_run.experiments("Training with EDA_CMA_ES...")
             start_time = time.time()
-            self.train_eda_cma_es_early_stopping(self.sigma, self.centroid, fit_params["fit_param"]["generations"], X, **fit_params)
+            self.train_eda_cma_es_early_stopping(self.sigma, self.centroid, fit_params["fit_param"]["generations"], X)
             log_exp_run.experiments("Time elapsed for EDA_CMA_ES: " + str(time.time() - start_time))
 
         if self.mode == "EDA_CUMDA":
             log_exp_run.experiments("Training with EDA_CUMDA...")
             start_time = time.time()
-            self.train_eda_cumda_early_stopping(self.sigma, fit_params["fit_param"]["generations"], X, **fit_params)
+            self.train_eda_cumda_early_stopping(self.sigma, fit_params["fit_param"]["generations"], X)
             log_exp_run.experiments("Time elapsed for EDA_CUMDA: " + str(time.time() - start_time))
 
-        self.save_state(path)
+        #self.save_state(path)
 
         return self
 
@@ -156,115 +168,34 @@ class EDA_Optimizer(NeuralNet):
 
                 log_exp_run.experiments("Loaded state from check point with mode: "+self.mode)
 
-    # Sci-kit methods
-    def predict(self, X):
-        x_train = X['features'].type(torch.LongTensor)
-        x_train = x_train.to(self.device)
-        self.module_.to(self.device)
-        prob = self.module_(x_train)
-        _, predicted = torch.max(prob.data, 1)
-        return predicted.cpu().numpy()[0]
-
-    # Skorch methods: Compute the loss function using hierarchical softmax on gensim module
-    def get_loss(self, X, y=None):
-        train_loss = 0
-        criterion = nn.CrossEntropyLoss()
-        iter_data = DataLoader(X, batch_size=self.module__batch_size, sampler=ImbalancedDatasetSampler(X))
-        log_exp_run = make_logger(name="experiment_" + self.mode)
-        self.module_.to(self.device)
-
-        with torch.no_grad():
-            for bach in iter_data:
-                x_train = bach['features'].type(torch.LongTensor)
-                y_train = bach['labels'].type(torch.LongTensor)
-                x_train = x_train.to(self.device)
-                y_train = y_train.to(self.device)
-                prob = self.self.module_cnn_.forward(x_train)
-                loss = criterion(prob, y_train)
-                train_loss += loss.item()
-
-        log_exp_run.experiments("Cross-entropy loss for each fold: " + str(train_loss))
-        return train_loss
-
-    # Scorch methods: Compute the loss function using softmax and compute score by accuracy
+    # Skorch methods: Compute the criterion metrics
     def score(self, X, y=None):
         train_loss = 0
-        criterion = nn.CrossEntropyLoss()
-        iter_data = DataLoader(X, batch_size=self.module__batch_size, shuffle=True)
+        iter_data = DataLoader(X, batch_size=self.batch_size, shuffle=True)
         log_exp_run = make_logger(name="experiment_" + self.mode)
 
-        predictions = []
-        labels = []
         self.module_.to(self.device)
         self.module_.eval()
 
         with torch.no_grad():
-            for bach in iter_data:
-                x_test = bach['features'].type(torch.LongTensor)
-                y_test = bach['labels'].type(torch.LongTensor)
-                x_test = x_test.to(self.device)
-                y_test = y_test.to(self.device)
-                prob = self.module_(x_test)
-                loss = criterion(prob, y_test)
+            for batch in iter_data:
+                input_ids = batch['source_ids'].to(self.device)
+                attention_mask = batch['attention_mask'].to(self.device)
+                labels = batch['target_ids'].to(self.device)
+                labels_ids = batch['labels'].to(self.device)
+                labels[labels == -100] = self.module_.config.pad_token_id
+                output = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask,
+                                      labels_ids=labels_ids)
+                loss = output.loss
                 train_loss += loss.item()
-                _, predicted = torch.max(prob.data, 1)
-                predictions.extend(predicted.cpu().numpy())
-                labels.extend(y_test.cpu().numpy())
 
-        accuracy = accuracy_score(labels, predictions)
-        mae = mean_absolute_error(labels, predictions)
-        macro_f1 = f1_score(labels, predictions, average='macro')
-
-        log_exp_run.experiments("Cross-entropy loss for each fold: " + str(train_loss))
-        log_exp_run.experiments("Accuracy for each fold: " + str(accuracy))
-        log_exp_run.experiments("\n" + classification_report(labels, predictions))
-        log_exp_run.experiments("\nMean Absolute Error (MAE): " + str(mae))
-        log_exp_run.experiments("\nMacro F1: " + str(macro_f1))
-        return accuracy
-
-    def score_unbalanced(self, X, y=None, is_unbalanced=True, print_logs=False):
-        train_loss = 0
-        criterion = nn.CrossEntropyLoss()
-        iter_data = DataLoader(X, batch_size=self.module__batch_size, sampler=ImbalancedDatasetSampler(X)) if is_unbalanced else DataLoader(X, batch_size=self.module__batch_size, shuffle=True)
-        log_exp_run = make_logger(name="experiment_" + self.mode)
-
-        predictions = []
-        labels = []
-        self.module_.to(self.device)
-        self.module_.eval()
-
-        with torch.no_grad():
-            for bach in iter_data:
-                x_test = bach['features'].type(torch.LongTensor)
-                y_test = bach['labels'].type(torch.LongTensor)
-                x_test = x_test.to(self.device)
-                y_test = y_test.to(self.device)
-                prob = self.module_(x_test)
-                loss = criterion(prob, y_test)
-                train_loss += loss.item()
-                _, predicted = torch.max(prob.data, 1)
-                predictions.extend(predicted.cpu().numpy())
-                labels.extend(y_test.cpu().numpy())
-
-        accuracy = accuracy_score(labels, predictions)
-
-        if print_logs:
-            mae = mean_absolute_error(labels, predictions)
-            macro_f1 = f1_score(labels, predictions, average='macro')
-
-            log_exp_run.experiments("Cross-entropy loss for each fold: " + str(train_loss))
-            log_exp_run.experiments("Accuracy for each fold: " + str(accuracy))
-            log_exp_run.experiments("\n"+classification_report(labels, predictions))
-            log_exp_run.experiments("\nMean Absolute Error (MAE)" + str(mae))
-            log_exp_run.experiments("\nMacro F1 (MAE)" + str(macro_f1))
-
-        confusion_mtx = sm.confusion_matrix(labels, predictions)
-        return accuracy, confusion_mtx
+        log_exp_run.experiments("Cross-entropy loss for each fold: {}".format(train_loss))
+        return train_loss
 
     # Training of tensor model using EMNA as EDA algorithms, with early stopping
     def train_eda_enma_early_stopping(self, sigma, centroid, generations, data):
         log_exp_run = make_logger(name="experiment_" + self.mode)
-        iter_data = DataLoader(data, batch_size=self.module__batch_size, sampler=ImbalancedDatasetSampler(data))
+        iter_data = DataLoader(data, batch_size=self.module__batch_size, shuffle=True)
 
         # LAMBDA is the size of the population
         # N is the size of individual, the number of parameters on ANN
@@ -339,7 +270,7 @@ class EDA_Optimizer(NeuralNet):
 
         best_solution = hof[0]
         series_fitness = [i.fitness.values[0] for i in population]
-        fix_individual_to_fc_layers(best_solution, self.module_, self.device)
+        fix_individual_to_fln_layers(best_solution, self.module_, self.device)
 
         log_exp_run.experiments("Results for EDA_EMNA\r\n")
         log_exp_run.experiments("Parameters: \r\n")
@@ -348,9 +279,9 @@ class EDA_Optimizer(NeuralNet):
         log_exp_run.experiments(list(series_fitness))
 
     # Training tensor model using CUMDA as EDA algorithms, with early stopping
-    def train_eda_cumda_early_stopping(self, sigma, generations, data,**fit_params):
+    def train_eda_cumda_early_stopping(self, sigma, generations, data):
         log_exp_run = make_logger(name="experiment_" + self.mode)
-        iter_data = DataLoader(data, batch_size=self.module__batch_size, sampler=ImbalancedDatasetSampler(data))
+        iter_data = DataLoader(data, batch_size=self.batch_size, shuffle=True)
         # LAMBDA is the size of the population
         # N is the size of individual, the number of parameters on ANN
 
@@ -403,15 +334,6 @@ class EDA_Optimizer(NeuralNet):
             record = stats.compile(population) if stats is not None else {}
             logbook.record(gen=gen, nevals=len(population), **record)
 
-            # Test acc and confusion matrix  charts
-            best_solution = hof[0]
-            fix_individual_to_fc_layers(best_solution, self.module_, self.device)
-            test_acc, confusion_mtx = self.score_unbalanced(X=fit_params["test_data"] if fit_params.get('fit_param')
-                                            is None else fit_params["fit_param"]["test_data"], is_unbalanced=False)
-            self.test_accs.append(test_acc)
-            self.confusion_mtxes.append(confusion_mtx)
-            self.train_accs.append(self.score_unbalanced(data,is_unbalanced=True))
-
             # print(self.logbook.stream)
             t += 1
 
@@ -435,7 +357,7 @@ class EDA_Optimizer(NeuralNet):
 
         best_solution = hof[0]
         series_fitness = [i.fitness.values[0] for i in population]
-        fix_individual_to_fc_layers(best_solution, self.module_, self.device)
+        fix_individual_to_fln_layers(best_solution, self.module_, self.device)
 
         log_exp_run.experiments("Results for EDA_CUMDA\r\n")
         log_exp_run.experiments("Parameters: \r\n")
@@ -444,9 +366,9 @@ class EDA_Optimizer(NeuralNet):
         log_exp_run.experiments(list(series_fitness))
 
     # Training tensor model using CMA-ES as EDA algorithms, with early stopping
-    def train_eda_cma_es_early_stopping(self, sigma, centroid, generations, data,**fit_params):
+    def train_eda_cma_es_early_stopping(self, sigma, centroid, generations, data):
         log_exp_run = make_logger(name="experiment_" + self.mode)
-        iter_data = DataLoader(data, batch_size=self.module__batch_size, sampler=ImbalancedDatasetSampler(data))
+        iter_data = DataLoader(data, batch_size=self.module__batch_size, shuffle=True)
         # LAMBDA is the size of the population
         # N is the size of individual, the number of parameters on ANN
         N, LAMBDA = self.param_length, self.individuals
@@ -494,15 +416,6 @@ class EDA_Optimizer(NeuralNet):
             record = stats.compile(population) if stats is not None else {}
             logbook.record(gen=gen, nevals=len(population), **record)
 
-            # Test acc and confusion matrix  charts
-            best_solution = hof[0]
-            fix_individual_to_fc_layers(best_solution, self.module_, self.device)
-            test_acc, confusion_mtx = self.score_unbalanced(X=fit_params["test_data"] if fit_params.get('fit_param')
-                                            is None else fit_params["fit_param"]["test_data"], is_unbalanced=False)
-            self.test_accs.append(test_acc)
-            self.confusion_mtxes.append(confusion_mtx)
-            self.train_accs.append(self.score(data))
-
             # print(self.logbook.stream)
             t += 1
 
@@ -526,7 +439,7 @@ class EDA_Optimizer(NeuralNet):
 
         best_solution = hof[0]
         series_fitness = [i.fitness.values[0] for i in population]
-        fix_individual_to_fc_layers(best_solution, self.module_, self.device)
+        fix_individual_to_fln_layers(best_solution, self.module_, self.device)
 
         log_exp_run.experiments("Results for EDA_CMA-ES\r\n")
         log_exp_run.experiments("Parameters: \r\n")
@@ -534,65 +447,79 @@ class EDA_Optimizer(NeuralNet):
         log_exp_run.experiments("\r\n" + str(logbook) + "\r\n")
         log_exp_run.experiments(list(series_fitness))
 
-    # Test model with test examples for evaluate accuracy an return confusion matrix
-    def test_model(self,dataset_test):
-        predictions=[]
-        labels=[]
+    def compute_metrics(self, labels, preds):
+
+        precision, recall, f1, _ = precision_recall_fscore_support(labels, preds, average='weighted', zero_division=0)
+        return {
+            'f1': f1,
+            'precision': precision,
+            'recall': recall
+        }
+
+    def score_unbalance(self, X, y=None, is_unbalanced=False, task='main'):
+        train_loss = 0
+        iter_data = DataLoader(X, batch_size=self.batch_size, sampler=ImbalancedDatasetSamplerMT5(X)) if is_unbalanced else DataLoader(X, batch_size=self.batch_size, shuffle=True)
+        log_exp_run = make_logger(name="experiment_" + self.mode)
+
         self.module_.to(self.device)
         self.module_.eval()
-        iter_data = DataLoader(dataset_test, batch_size=self.module__batch_size, shuffle=True)
-        log_exp_run = make_logger(name="experiment_" + self.mode)
+
+        predictions = []
+        labels_ref = []
+
         with torch.no_grad():
             for batch in iter_data:
-                x_test = batch['features'].type(torch.LongTensor)
-                y_test = batch['labels'].type(torch.LongTensor)
-                x_test = x_test.to(self.device)
-                y_test = y_test.to(self.device)
-                prob = self.module_(x_test)
-                _,predicted=torch.max(prob.data,1)
-                predictions.extends(predicted.cpu().numpy())
-                labels.extends(y_test.cpu().numpy())
+                input_ids = batch['source_ids'].to(self.device)
+                attention_mask = batch['attention_mask'].to(self.device)
+                labels = batch['target_ids'].to(self.device) if task == 'main' else batch['target_ids_attraction'].to(self.device)
+                labels_ids = batch['labels'].to(self.device) if task == 'main' else batch['labels_attraction'].to(self.device)
+                labels[labels == -100] = self.module_.config.pad_token_id
+                output = self.module_(input_ids=input_ids, labels=labels, attention_mask=attention_mask, labels_ids=labels_ids)
+                loss = output.loss
+                train_loss += loss.item()
 
-        log_exp_run.experiments(classification_report(labels,predictions))
+                logits = output.logits
+                preds_batch = torch.argmax(logits, dim=-1)
+                predictions.extend(preds_batch.cpu().numpy())
+                labels_ref.extend(labels_ids.cpu().numpy())
+
+        accuracy = accuracy_score(labels_ref, predictions)
+        # mae = mean_absolute_error(labels_ref, predictions)
+        macro_f1 = f1_score(labels_ref, predictions, average='macro')
+
+        log_exp_run.experiments("Cross-entropy loss for each fold: {}".format(train_loss))
+        log_exp_run.experiments("Accuracy for each fold: " + str(accuracy))
+        log_exp_run.experiments("\n" + classification_report(labels_ref, predictions))
+        # log_exp_run.experiments("\nMean Absolute Error (MAE): " + str(mae))
+        log_exp_run.experiments("\nMacro F1: " + str(macro_f1))
+        confusion_mtx = sm.confusion_matrix(labels_ref, predictions)
+        metrics = self.compute_metrics(labels_ref,predictions)
+        log_exp_run.experiments("All metrics (weighted) \nF1= {}, precision= {}, recall= {}".format(metrics['f1'], metrics['precision'], metrics['recall']))
+        return accuracy, confusion_mtx
 
 
 #  Compute loss with examples giving a single individual and Tensor model
 def loss_function(individual, model, training_data, device):
-    #fix_individual_to_layers(individual, model, device)
-    fix_individual_to_fc_layers(individual, model, device)
+    fix_individual_to_fln_layers(individual, model, device)
     train_loss = 0
-    criterion = nn.CrossEntropyLoss()
     model.to(device)
 
     with torch.no_grad():
-        for bach in training_data:
-            x_train = bach['features'].type(torch.LongTensor)
-            y_train = bach['labels'].type(torch.LongTensor)
-            x_train = x_train.to(device)
-            y_train = y_train.to(device)
-            prob = model.forward(x_train)
-            loss = criterion(prob, y_train)
+        for batch in training_data:
+            input_ids = batch['source_ids'].to(device)
+            attention_mask = batch['attention_mask'].to(device)
+            labels = batch['target_ids'].to(device)
+            labels_ids = batch['labels'].to(device)
+            labels[labels == -100] = model.config.pad_token_id
+            output = model(input_ids=input_ids, labels=labels, attention_mask=attention_mask, labels_ids=labels_ids)
+            loss = output.loss
             train_loss += loss.item()
 
     return train_loss,
 
 
-#  Fix individual to each layer in params model
-def fix_individual_to_layers(individual, model, device):
-    index = 0
-    individual_tensor = torch.tensor(individual)
-    individual_tensor.to(device)
-    model.to(device)
-    for p in model.parameters():
-        if p.requires_grad:
-            len_p = p.numel()
-            aux_tensor = individual_tensor[index:index + len_p]
-            p.data = aux_tensor.reshape(p.shape).data
-            index += len_p
-
-
 #  Fix individual to full-connected layer in params model
-def fix_individual_to_fc_layers(individual, model, device):
+def fix_individual_to_fln_layers(individual, model, device):
     index = 0
     individual_tensor = torch.tensor(individual)
     individual_tensor.to(device)
@@ -602,5 +529,5 @@ def fix_individual_to_fc_layers(individual, model, device):
         if p.requires_grad and fc_pathern.match(name):
             len_p = p.numel()
             aux_tensor = individual_tensor[index:index + len_p]
-            p.data = aux_tensor.reshape(p.shape).data
+            p.data = aux_tensor.reshape(p.shape).data.type(torch.FloatTensor)
             index += len_p
