@@ -99,7 +99,7 @@ def train_model_t5_aqg(dic_param, log_exp_run, wdir, device, train_data, test_da
     confusion_matrix_chart(trainer.test_accs, trainer.train_accs, trainer.confusion_mtxes,
                            range(dic_param['labels']), dic_param['epochs'], wdir + "experiments/")
 
-    return gscv_best_model
+    return trainer
 
 
 def train_model_t5_custom(dic_param, log_exp_run, wdir, device, train_data, test_data, gscv_best_model):
@@ -148,7 +148,7 @@ def train_model_t5_custom(dic_param, log_exp_run, wdir, device, train_data, test
     confusion_matrix_chart(trainer.test_accs, trainer.train_accs, trainer.confusion_mtxes,
                            range(dic_param['labels']), dic_param['epochs'], wdir + "experiments/")
 
-    return gscv_best_model
+    return trainer
 
 
 
