@@ -40,13 +40,15 @@ def score_sentiment_two_task(X, model1,model2, device):
     output = ""
     with torch.no_grad():
         for i,data in enumerate(X):
-            x_test = torch.from_numpy(data['features']).type(torch.LongTensor).to(device)
-            x_test = torch.reshape(x_test, (1, x_test.shape[0]))
+            input_ids = data['source_ids'].to(device)
+            attention_mask = data['attention_mask'].to(device)
+            input_ids = torch.from_numpy(input_ids).type(torch.LongTensor).to(device)
+            input_ids = torch.reshape(input_ids, (1, input_ids.shape[0]))
 
-            prob1 = model1(x_test)
+            prob1 = model1(input_ids)
             _, predicted1 = torch.max(prob1.data, 1)
 
-            prob2 = model2(x_test)
+            prob2 = model2(input_ids)
             _, predicted2 = torch.max(prob2.data, 1)
 
             output += "\"sentiment\"\t\"{}\"\t\"{}\"\t\"{}\"\n".format(i+1, predicted1.cpu().numpy()[0]+1, atractions[predicted1.cpu().numpy()[0]])

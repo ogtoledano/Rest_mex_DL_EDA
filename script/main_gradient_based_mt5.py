@@ -10,7 +10,7 @@ from transformers.models.mt5 import MT5ForConditionalGeneration
 import torch
 from torch.optim import AdamW
 
-from algorithms_models.model_mt5_emoeval_builder import CustomMT5Model
+from algorithms_models.model_mt5_encoder_builder import CustomMT5Model
 from algorithms_models.trainer_mt5 import Trainer
 from algorithms_models.trainer_mt5_custom import TrainerMT5Custom
 from algorithms_models import model_mt5_emoeval_builder

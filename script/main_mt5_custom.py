@@ -8,6 +8,8 @@ from utils.custom_dataloader import CustomDataset
 import numpy as np
 
 if __name__ == "__main__":
+    # max allocation to CUDA 20MB
+    os.system("export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:20")
     # For deterministic results
     random_seed = 64
     np.random.seed(random_seed)
