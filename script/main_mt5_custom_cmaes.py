@@ -95,7 +95,6 @@ if __name__ == "__main__":
         trainer.fit(train_dataset, fit_param=param_model)
         trainer.score_unbalance(val_dataset)
         trainer.score_unbalance(train_dataset, is_unbalanced=False)
-        confusion_matrix_chart(trainer.test_accs, trainer.train_accs, trainer.confusion_mtxes,
-                               range(dic_param['labels']), dic_param['epochs'], wdir + "experiments/")
+        confusion_matrix_chart_eda(trainer.test_accs, trainer.confusion_mtxes, range(dic_param['labels']), wdir + "experiments/")
         log_exp_run.experiments(dic_param['cnn_optimizer'] + " + EDA_CMA_ES: Process ends successfully!")
         log_exp_run.experiments("--------------------------\n\n\n")
