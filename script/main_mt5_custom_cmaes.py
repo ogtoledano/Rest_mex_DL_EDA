@@ -16,7 +16,7 @@ import pandas as pd
 import seaborn as sns
 
 
-def confusion_matrix_chart(test_accs,train_accs, confusion_mtxes, labels, epoches, url_img, figsize=(20, 8)):
+def confusion_matrix_chart_eda(test_accs, confusion_mtxes, labels, url_img, figsize=(20, 8)):
     cm = confusion_mtxes[np.argmax(test_accs)]
     cm_sum = np.sum(cm, axis=1, keepdims=True)
     cm_perc = cm / cm_sum * 100
@@ -35,15 +35,6 @@ def confusion_matrix_chart(test_accs,train_accs, confusion_mtxes, labels, epoche
     cm.columns.name = 'Predicted'
 
     fig = plt.figure(figsize=figsize)
-    x_axis= np.asarray([x for x in range(epoches)])
-    plt.subplot(1, 2, 1)
-    plt.plot(x_axis,test_accs, 'g')
-    plt.xlabel("Epoches")
-    plt.plot(x_axis,train_accs,'r')
-    plt.ylabel("Accuracy")
-    plt.grid(True)
-
-    plt.subplot(1, 2, 2)
     sns.heatmap(cm, annot=annot, fmt='', cmap="Blues")
     plt.savefig(url_img+'figure.png')
     plt.show()

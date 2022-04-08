@@ -113,6 +113,7 @@ class EDA_Optimizer(NeuralNet):
 
         is_unbalanced = fit_params["is_unbalanced"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["is_unbalanced"]
         task = fit_params["task"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["task"]
+        test_data = fit_params["test_data"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["test_data"]
 
         if self.mode == "EDA_EMNA":
             log_exp_run.experiments("Training with EDA_EMNA...")
@@ -123,7 +124,7 @@ class EDA_Optimizer(NeuralNet):
         if self.mode == "EDA_CMA_ES":
             log_exp_run.experiments("Training with EDA_CMA_ES...")
             start_time = time.time()
-            self.train_eda_cma_es_early_stopping(self.sigma, self.centroid, fit_params["fit_param"]["generations"], X, is_unbalanced, task)
+            self.train_eda_cma_es_early_stopping(self.sigma, self.centroid, fit_params["fit_param"]["generations"], X, test_data, is_unbalanced, task)
             log_exp_run.experiments("Time elapsed for EDA_CMA_ES: " + str(time.time() - start_time))
 
         if self.mode == "EDA_CUMDA":
@@ -364,7 +365,7 @@ class EDA_Optimizer(NeuralNet):
         log_exp_run.experiments(list(series_fitness))
 
     # Training tensor model using CMA-ES as EDA algorithms, with early stopping
-    def train_eda_cma_es_early_stopping(self, sigma, centroid, generations, data, is_unbalanced=False, task="main"):
+    def train_eda_cma_es_early_stopping(self, sigma, centroid, generations, data, test_data, is_unbalanced=False, task="main"):
         log_exp_run = make_logger(name="experiment_" + self.mode)
         iter_data = DataLoader(data, batch_size=self.batch_size, sampler=ImbalancedDatasetSamplerMT5(data)) if is_unbalanced else DataLoader(data, batch_size=self.batch_size, shuffle=True)
         # LAMBDA is the size of the population
@@ -396,6 +397,10 @@ class EDA_Optimizer(NeuralNet):
         STAGNATION_ITER = 100  # int(np.ceil(0.2 * t + 120 + 30. * N / LAMBDA))
         min_std = 1e-4
         conditions = {"MaxIter": False, "Stagnation": False}
+
+        self.test_accs = []
+        self.train_accs = []
+        self.confusion_mtxes = []
 
         for gen in range(generations):
             # Generate a new population
@@ -438,6 +443,11 @@ class EDA_Optimizer(NeuralNet):
         best_solution = hof[0]
         series_fitness = [i.fitness.values[0] for i in population]
         fix_individual_to_fln_layers(best_solution, self.module_, self.device)
+
+        # Test acc and confusion matrix  charts
+        test_acc, confusion_mtx = self.score_unbalance(X=test_data,is_unbalanced=False, task=task)
+        self.test_accs.append(test_acc)
+        self.confusion_mtxes.append(confusion_mtx)
 
         log_exp_run.experiments("Results for EDA_CMA-ES\r\n")
         log_exp_run.experiments("Parameters: \r\n")
