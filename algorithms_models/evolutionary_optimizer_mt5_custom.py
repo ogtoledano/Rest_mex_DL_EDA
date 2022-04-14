@@ -511,7 +511,7 @@ def loss_function(individual, model, training_data, device, task):
     fix_individual_to_fln_layers(individual, model, device)
     train_loss = 0
     model.to(device)
-
+    model.eval()
     with torch.no_grad():
         for batch in training_data:
             input_ids = batch['source_ids'].to(device)

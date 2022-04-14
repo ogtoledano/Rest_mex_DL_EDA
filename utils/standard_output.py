@@ -42,15 +42,16 @@ def score_sentiment_two_task(X, model1,model2, device):
         for i,data in enumerate(X):
             input_ids = data['source_ids'].to(device)
             attention_mask = data['attention_mask'].to(device)
-            input_ids = torch.from_numpy(input_ids).type(torch.LongTensor).to(device)
+            # input_ids = torch.from_numpy(input_ids).type(torch.LongTensor).to(device)
             input_ids = torch.reshape(input_ids, (1, input_ids.shape[0]))
+            attention_mask = torch.reshape(attention_mask, (1, attention_mask.shape[0]))
 
-            prob1 = model1(input_ids=input_ids,attention_mask=attention_mask)
-            _, predicted1 = torch.max(prob1.data, 1)
+            outputs1 = model1(input_ids=input_ids,attention_mask=attention_mask)
+            _, predicted1 = torch.max(outputs1.logits, 1)
 
-            prob2 = model2(input_ids=input_ids,attention_mask=attention_mask)
-            _, predicted2 = torch.max(prob2.data, 1)
+            outputs2 = model2(input_ids=input_ids,attention_mask=attention_mask)
+            _, predicted2 = torch.max(outputs2.logits, 1)
 
-            output += "\"sentiment\"\t\"{}\"\t\"{}\"\t\"{}\"\n".format(i+1, predicted1.cpu().numpy()[0]+1, atractions[predicted1.cpu().numpy()[0]])
+            output += "\"sentiment\"\t\"{}\"\t\"{}\"\t\"{}\"\n".format(i+1, predicted1.cpu().numpy()[0]+1, atractions[predicted2.cpu().numpy()[0]])
 
     return output
