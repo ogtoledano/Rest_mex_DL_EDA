@@ -45,7 +45,6 @@ def score_sentiment_two_task(X, model1,model2, device):
         for i,data in enumerate(X):
             input_ids = data['source_ids'].to(device)
             attention_mask = data['attention_mask'].to(device)
-            labels=data['labels'].to(device)
             # input_ids = torch.from_numpy(input_ids).type(torch.LongTensor).to(device)
             input_ids = torch.reshape(input_ids, (1, input_ids.shape[0]))
             attention_mask = torch.reshape(attention_mask, (1, attention_mask.shape[0]))
@@ -56,15 +55,6 @@ def score_sentiment_two_task(X, model1,model2, device):
             outputs2 = model2(input_ids=input_ids,attention_mask=attention_mask)
             predicted2 = torch.argmax(outputs2.logits, dim=-1)
 
-            predictions.extend(predicted1.cpu().numpy())
-            labels_ref.extend(predicted2.cpu().numpy())
-
             output += "\"sentiment\"\t\"{}\"\t\"{}\"\t\"{}\"\n".format(i+1, predicted1.cpu().numpy()[0]+1, atractions[predicted2.cpu().numpy()[0]])
 
-    accuracy = accuracy_score(labels_ref, predictions)
-    mae = mean_absolute_error(labels_ref, predictions)
-    macro_f1 = f1_score(labels_ref, predictions, average='macro')
-
-    print("acc: {}, mae: {}, macrof1:{}".format(accuracy,mae,macro_f1))
-    output+="acc: {}, mae: {}, macrof1:{}".format(accuracy,mae,macro_f1)
     return output
