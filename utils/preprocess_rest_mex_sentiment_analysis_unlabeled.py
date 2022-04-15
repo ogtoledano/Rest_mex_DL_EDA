@@ -31,8 +31,6 @@ def prepare_input(texts):
 def tokenize(data):
     tokenizer = T5Tokenizer.from_pretrained("google/mt5-small")
 
-    ids = [int(value) for value in data['id']]
-
     source_encoding = tokenizer(
         data['input_text'],
         max_length=200,
@@ -44,7 +42,7 @@ def tokenize(data):
     encodings = {
         'source_ids': source_encoding['input_ids'],
         'attention_mask': source_encoding['attention_mask'],
-        'id': torch.tensor(ids, dtype=torch.long)
+        'id': data['id']
     }
 
     return encodings
@@ -64,7 +62,7 @@ def build_dataset_and_dict():
     for i in range(df.shape[0]):
         whole_text = str(df.iloc[i, 1]) + ": " + str(df.iloc[i, 2])
         X.append(whole_text)
-        id.append(str(df.iloc[i, 0]))
+        id.append(df.iloc[i, 0])
 
     stt_test = {'input_text': X, 'id': id}
 
