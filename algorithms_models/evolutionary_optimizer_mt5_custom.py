@@ -154,7 +154,7 @@ class EDA_Optimizer(NeuralNet):
 
         #path = path+"params_eda.pt"
         if os.path.exists(path):
-            checkpoint = torch.load(path)
+            checkpoint = torch.load(path, map_location='cuda:0')
             log_exp_run = make_logger(name="experiment_" + self.mode)
             if checkpoint is not None:
                 self.module_.load_state_dict(checkpoint["model_state_dict"])
