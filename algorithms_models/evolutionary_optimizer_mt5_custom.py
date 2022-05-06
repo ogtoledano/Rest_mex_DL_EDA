@@ -133,7 +133,7 @@ class EDA_Optimizer(NeuralNet):
             self.train_eda_cumda_early_stopping(self.sigma, fit_params["fit_param"]["generations"], X)
             log_exp_run.experiments("Time elapsed for EDA_CUMDA: " + str(time.time() - start_time))
 
-        #self.save_state(path)
+        self.save_state(path)
 
         return self
 
@@ -152,7 +152,7 @@ class EDA_Optimizer(NeuralNet):
         if not self.warm_start or not self.initialized_:
             self.initialize()
 
-        path = path+"params_eda.pt"
+        #path = path+"params_eda.pt"
         if os.path.exists(path):
             checkpoint = torch.load(path)
             log_exp_run = make_logger(name="experiment_" + self.mode)

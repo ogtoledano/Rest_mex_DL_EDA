@@ -36,7 +36,8 @@ def confusion_matrix_chart_eda(test_accs, confusion_mtxes, labels, url_img, figs
 
     fig = plt.figure(figsize=figsize)
     sns.heatmap(cm, annot=annot, fmt='', cmap="Blues")
-    plt.savefig(url_img+'figure.png')
+    plt.savefig(url_img+'EDA_CMA_ES.eps', format='eps')
+    #plt.savefig(url_img+'figure.png')
     plt.show()
 
 
@@ -95,6 +96,6 @@ if __name__ == "__main__":
         trainer.fit(train_dataset, fit_param=param_model)
         trainer.score_unbalance(val_dataset)
         trainer.score_unbalance(train_dataset, is_unbalanced=False)
-        confusion_matrix_chart_eda(trainer.test_accs, trainer.confusion_mtxes, range(dic_param['labels']), wdir + "experiments/")
+        confusion_matrix_chart_eda(trainer.test_accs, trainer.confusion_mtxes, ["1","2","3","4","5"], wdir + "experiments/")
         log_exp_run.experiments(dic_param['cnn_optimizer'] + " + EDA_CMA_ES: Process ends successfully!")
         log_exp_run.experiments("--------------------------\n\n\n")
