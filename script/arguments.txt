@@ -1,6 +1,6 @@
-dataset_train=dataset_train_stt_mt5
-dataset_test=dataset_test_stt_mt5
-dataset_dev=dataset_dev_stt_mt5
+dataset_train=dataset_train_uc_mt5
+dataset_test=dataset_test_uc_mt5
+dataset_dev=dataset_dev_uc_mt5
 dataset_dictionary=dictionary_stt_nosw
 name_log_experiments_result=experiment_train_stt_small
 epochs=3
