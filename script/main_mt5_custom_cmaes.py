@@ -94,8 +94,8 @@ if __name__ == "__main__":
 
         # Do STAGE 2: Learning full-connected layer by EDA optimization
         trainer.fit(train_dataset, fit_param=param_model)
-        trainer.score_unbalance(val_dataset)
-        trainer.score_unbalance(train_dataset, is_unbalanced=False)
+        trainer.score_unbalance(val_dataset, task="attraction")
+        trainer.score_unbalance(train_dataset, is_unbalanced=False, task="attraction")
         confusion_matrix_chart_eda(trainer.test_accs, trainer.confusion_mtxes, ["1","2","3","4","5"], wdir + "experiments/")
         log_exp_run.experiments(dic_param['cnn_optimizer'] + " + EDA_CMA_ES: Process ends successfully!")
         log_exp_run.experiments("--------------------------\n\n\n")
