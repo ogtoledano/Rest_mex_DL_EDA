@@ -121,7 +121,19 @@ class Trainer(NeuralNet):
             log_exp_run.experiments("\nMean Absolute Error (MAE)" + str(mae))
             log_exp_run.experiments("\nMacro F1 (MAE)" + str(macro_f1))
 
+        mae = mean_absolute_error(labels, predictions)
+        macro_f1 = f1_score(labels, predictions, average='macro')
+
+        log_exp_run.experiments("Cross-entropy loss for each fold: {}".format(train_loss))
+        log_exp_run.experiments("Accuracy for each fold: " + str(accuracy))
+        log_exp_run.experiments("\n" + classification_report(labels, predictions))
+        log_exp_run.experiments("\nMean Absolute Error (MAE): " + str(mae))
+        log_exp_run.experiments("\nMacro F1: " + str(macro_f1))
         confusion_mtx = sm.confusion_matrix(labels, predictions)
+        metrics = self.compute_metrics(labels, predictions)
+        log_exp_run.experiments(
+            "All metrics (weighted) \nF1= {}, precision= {}, recall= {}".format(metrics['f1'], metrics['precision'],
+                                                                                metrics['recall']))
         return accuracy, confusion_mtx
 
     # Skorch methods: this method fits the estimator by back-propagation and an optimizer
