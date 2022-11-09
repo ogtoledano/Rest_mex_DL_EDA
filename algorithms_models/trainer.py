@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from utils.logging_custom import make_logger
 
 # Scikit-learn ----------------------------------------------------------+
-from sklearn.metrics import classification_report,accuracy_score, mean_absolute_error, f1_score
+from sklearn.metrics import classification_report, precision_recall_fscore_support, f1_score, accuracy_score, mean_absolute_error
 from skorch import NeuralNet
 from utils.imbalanced_dataset_sampling import ImbalancedDatasetSampler
 import sklearn.metrics as sm
@@ -49,6 +49,15 @@ class Trainer(NeuralNet):
 
     def get_module(self):
         return self.module_
+
+    def compute_metrics(self, labels, preds):
+
+        precision, recall, f1, _ = precision_recall_fscore_support(labels, preds, average='weighted', zero_division=0)
+        return {
+            'f1': f1,
+            'precision': precision,
+            'recall': recall
+        }
 
     # Skorch methods: Compute the loss function using softmax and compute score by accuracy
     def score(self, X, y=None):
