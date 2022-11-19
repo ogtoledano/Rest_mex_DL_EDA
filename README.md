@@ -19,7 +19,7 @@ Colab REST-MEX 2022 Sentiment Analaysis two subtasks
 **Cite** This is part of the research [paper](https://ceur-ws.org/Vol-3202/restmex-paper12.pdf).  If you find this code useful in your research, please consider citing:
 
     @inproceedings{Toledano-Lopez2022,
-	Author = {Toledano-López, Orlando Grabiel and Madera, Julio and Gonz{\'{a}}lez, Hector and Sim{\'{o}}n-Cuevas, Alfredo and Demeester, Thomas and Mannens, Erik},
+	Author = {Toledano-López, Orlando Grabiel and Madera, Julio and González, Hector and Simón-Cuevas, Alfredo and Demeester, Thomas and Mannens, Erik},
 	Title = {Fine-tuning mT5-based Transformer via CMA-ES for Sentiment Analysis},
 	Booktitle  = {CEUR Workshop Proceedings},
 	Volume = {3202},
