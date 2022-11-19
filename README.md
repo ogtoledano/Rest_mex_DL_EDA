@@ -16,7 +16,7 @@ Colab REST-MEX 2022 Sentiment Analaysis two subtasks
 
 ## Publications
 
-**Cite** This is part of the research [paper](https://ceur-ws.org/Vol-3202/restmex-paper12.pdf).  If you find this code useful in your research, please consider citing:
+**Cite** This repo is part of the research [paper](https://ceur-ws.org/Vol-3202/restmex-paper12.pdf).  If you find this code useful in your research, please consider citing:
 
     @inproceedings{Toledano-Lopez2022,
 	Author = {Toledano-López, Orlando Grabiel and Madera, Julio and González, Hector and Simón-Cuevas, Alfredo and Demeester, Thomas and Mannens, Erik},
