@@ -14,6 +14,21 @@ Colab REST-MEX 2022 Sentiment Analaysis two subtasks
 
 *********** update at March 21, 2022 *************
 
+## Publications
+
+**Cite** This is part of the research [paper](https://ceur-ws.org/Vol-3202/restmex-paper12.pdf).  If you find this code useful in your research, please consider citing:
+
+    @inproceedings{Toledano-Lopez2022,
+	Author = {Toledano-López, Orlando Grabiel and Madera, Julio and Gonz{\'{a}}lez, Hector and Sim{\'{o}}n-Cuevas, Alfredo and Demeester, Thomas and Mannens, Erik},
+	Title = {Fine-tuning mT5-based Transformer via CMA-ES for Sentiment Analysis},
+	Booktitle  = {CEUR Workshop Proceedings},
+	Volume = {3202},
+	isbn = {0000000299015},
+    issn = {16130073},
+    keywords = {Covariance Matrix Adaptation Evolution Strategy,Sentiment Analysis,mT5-based Transformer},
+	Year = {2022}
+    }
+
 ## Requirements
 
 In order to run this project you will need a working installation of:
@@ -35,7 +50,7 @@ For loading pre-trained models, Dataloaders, hyper-parameters tuning, Transforme
 
 ## Pre-trained models
 
-We use two pre-trained models taken off [Hugging Face ðŸ¤—](https://huggingface.co/):
+We use two pre-trained models taken off [Hugging Face](https://huggingface.co/):
 
 + MT5-base: `google/mt5-base`. Pre-trained model is available at [here](https://huggingface.co/google/mt5-base)
 + MT5-base-small: `google/mt5-small`. Pre-trained model is available at [here](https://huggingface.co/google/mt5-small)
