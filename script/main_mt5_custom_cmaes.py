@@ -60,8 +60,8 @@ if __name__ == "__main__":
     log_exp_run = make_logger(name="" + dic_param['name_log_experiments_result'])
     device = "cuda:" + str(dic_param['cuda_device_id']) if torch.cuda.is_available() else "cpu"
 
-    train_dataset = CustomDatasetRestMexTwoTask(torch.load(wdir + "/datasets/" + dic_param['dataset_train']))
-    val_dataset = CustomDatasetRestMexTwoTask(torch.load(wdir + "/datasets/" + dic_param['dataset_dev']))
+    train_dataset = CustomDataset(torch.load(wdir + "/datasets/" + dic_param['dataset_train']))
+    val_dataset = CustomDataset(torch.load(wdir + "/datasets/" + dic_param['dataset_test']))
 
     gscv_best_model = None
 
