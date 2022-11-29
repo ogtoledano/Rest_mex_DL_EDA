@@ -132,7 +132,7 @@ class TrainerMT5Custom(NeuralNet):
         confusion_mtx = sm.confusion_matrix(labels_ref, predictions)
         metrics = self.compute_metrics(labels_ref,predictions)
         log_exp_run.experiments("All metrics (weighted) \nF1= {}, precision= {}, recall= {}".format(metrics['f1'], metrics['precision'], metrics['recall']))
-        return accuracy, confusion_mtx
+        return accuracy, mae, macro_f1, confusion_mtx
 
     # Skorch methods: this method fits the estimator by back-propagation and an optimizer
     def fit(self, X, y=None, **fit_params):
@@ -147,6 +147,8 @@ class TrainerMT5Custom(NeuralNet):
 
         self.test_accs = []
         self.train_accs = []
+        self.test_mae = []
+        self.train_mae = []
         self.confusion_mtxes = []
 
         self.module_.to(self.device)
@@ -204,10 +206,12 @@ class TrainerMT5Custom(NeuralNet):
             self.train_loss_acc.append(train_loss)
 
             # Test acc and confusion matrix  charts
-            test_acc, confusion_mtx = self.score_unbalance(X=fit_params["test_data"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["test_data"], is_unbalanced=False, task=task)
+            test_acc, mae, macro_f1, confusion_mtx = self.score_unbalance(X=fit_params["test_data"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["test_data"], is_unbalanced=False, task=task)
             self.test_accs.append(test_acc)
+            self.test_mae.append(mae)
             self.confusion_mtxes.append(confusion_mtx)
             self.train_accs.append(accuracy_score(labels_ref, predictions))
+            self.train_mae.append(mean_absolute_error(labels_ref, predictions))
 
         log_exp_run.experiments("Train loss series:")
         log_exp_run.experiments(self.train_loss_acc)
