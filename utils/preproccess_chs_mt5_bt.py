@@ -213,11 +213,15 @@ def build_dataset_and_dict():
         rslt_df = df.loc[df['y'] == i]
         rslt_df_i = rslt_df.sample(n=augmentation[i])
         bt = perform_back_translation_with_augmentation(rslt_df_i['X'].tolist(), device,first_model_tkn, first_model, second_model_tkn, second_model)
-        dictionary_data['X'] += bt
-        dictionary_data['y'] += [i for _ in bt]
-        print("done in {} label".format(i))
+        len_before = len(rslt_df['X'].tolist())
+        augmented_list = list(set(rslt_df['X'].tolist() + bt))
+        X += augmented_list
+        len_increased = len(augmented_list)
+        y += [i for _ in range(len_increased - len_before)]
+        print("done in {} label, and {} examples increased".format(i, (len_increased - len_before)))
 
-    stt_train = {'input_text': dictionary_data['X'], 'target_text': dictionary_data['y']}
+    X_train, _, y_train, _ = train_test_split(X, y, test_size=0.0, random_state=142)
+    stt_train = {'input_text': X_train, 'target_text': y_train}
     stt_dev = {'input_text': X_dev, 'target_text': y_dev}
 
     print("Number of instances for training: ")
