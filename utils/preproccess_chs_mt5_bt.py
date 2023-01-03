@@ -220,8 +220,7 @@ def build_dataset_and_dict():
         y += [i for _ in range(len_increased - len_before)]
         print("done in {} label, and {} examples increased".format(i, (len_increased - len_before)))
 
-    X_train, _, y_train, _ = train_test_split(X, y, test_size=0.0, random_state=142)
-    stt_train = {'input_text': X_train, 'target_text': y_train}
+    stt_train = {'input_text': X, 'target_text': y}
     stt_dev = {'input_text': X_dev, 'target_text': y_dev}
 
     print("Number of instances for training: ")
