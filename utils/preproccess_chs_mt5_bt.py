@@ -204,7 +204,7 @@ def build_dataset_and_dict():
     augmentation = {'0': 1206,
                     '1': 1103,
                     '2': 1200,
-                    '3': 1200}
+                    '3': 1200}# 1198
 
     first_model_tkn, first_model = get_mt_model('es-en', device)
     second_model_tkn, second_model = get_mt_model('en-es', device)
@@ -217,34 +217,70 @@ def build_dataset_and_dict():
         augmented_list = list(set(rslt_df['X'].tolist() + bt))
         X += augmented_list
         len_increased = len(augmented_list)
-        y += [i for _ in range(len_increased - len_before)]
+        y += [i for _ in range(len_increased)]
         print("done in {} label, and {} examples increased".format(i, (len_increased - len_before)))
 
-    stt_train = {'input_text': X, 'target_text': y}
-    stt_dev = {'input_text': X_dev, 'target_text': y_dev}
+    X += rslt_df_4['X'].tolist()
+    y += rslt_df_4['y'].tolist()
 
-    print("Number of instances for training: ")
+    x1, x2, y1, y2=train_test_split(X, y, test_size=0.30, random_state=142)
+    X=x1+x2
+    y=y1+y2
+
+    stt_train = {'input_text': X_train, 'target_text': y_train}
+    stt_train_lemm = {'input_text': X_train.copy(), 'target_text': y_train.copy()}
+    stt_train_bt = {'input_text': X, 'target_text': y}
+    stt_train_bt_lemm = {'input_text': X.copy(), 'target_text': y.copy()}
+
+    stt_test = {'input_text': X_dev, 'target_text': y_dev}
+    stt_test_lemm = {'input_text': X_dev.copy(), 'target_text': y_dev.copy()}
+
+    print("Number of instances for training with bt: ")
+    print(len(stt_train_bt['input_text']))
+    print("Number of instances for test set : ")
+    print(len(stt_test['input_text']))
+
+    print("Number of instances for training without bt: ")
     print(len(stt_train['input_text']))
-    print("Number of instances for dev set: ")
-    print(len(stt_dev['input_text']))
 
-    print(stt_train['input_text'][0])
+    # normalize bt
     normalize(stt_train['input_text'])
-    print(stt_train['input_text'][0])
-    normalize(stt_dev['input_text'])
+    normalize(stt_train_bt['input_text'])
+    normalize(stt_train_lemm['input_text'])
+    normalize(stt_train_bt_lemm['input_text'])
 
-    lemmatization(stt_train['input_text'])
-    lemmatization(stt_dev['input_text'])
+    normalize(stt_test['input_text'])
+    normalize(stt_test_lemm['input_text'])
+
+    # lemmatize bt
+    lemmatization(stt_train_lemm['input_text'])
+    lemmatization(stt_train_bt_lemm['input_text'])
+
+    lemmatization(stt_test_lemm['input_text'])
 
     prepare_input(stt_train['input_text'])
-    prepare_input(stt_dev['input_text'])
+    prepare_input(stt_train_bt['input_text'])
+    prepare_input(stt_train_lemm['input_text'])
+    prepare_input(stt_train_bt_lemm['input_text'])
+
+    prepare_input(stt_test['input_text'])
+    prepare_input(stt_test_lemm['input_text'])
 
     stt_train = tokenize(stt_train,tokenizer)
-    stt_dev = tokenize(stt_dev,tokenizer)
+    stt_train_bt = tokenize(stt_train_bt, tokenizer)
+    stt_train_lemm = tokenize(stt_train_lemm, tokenizer)
+    stt_train_bt_lemm = tokenize(stt_train_bt_lemm, tokenizer)
 
-    torch.save(stt_train, wdir + "/datasets/dataset_train_chs_mt5_bt_lemm")
+    stt_test = tokenize(stt_test,tokenizer)
+    stt_test_lemm = tokenize(stt_test_lemm, tokenizer)
 
-    torch.save(stt_dev, wdir + "/datasets/dataset_test_chs_mt5_bt_lemm")
+    torch.save(stt_train, wdir + "/datasets/dataset_train_chs_mt5")
+    torch.save(stt_train_bt, wdir + "/datasets/dataset_train_chs_mt5_bt")
+    torch.save(stt_train_lemm, wdir + "/datasets/dataset_train_chs_mt5_lemmatized")
+    torch.save(stt_train_bt_lemm, wdir + "/datasets/dataset_train_chs_mt5_bt_lemm")
+
+    torch.save(stt_test, wdir + "/datasets/dataset_test_chs_mt5")
+    torch.save(stt_test_lemm, wdir + "/datasets/dataset_test_chs_mt5_lemmatized")
 
 
 if __name__ == "__main__":
