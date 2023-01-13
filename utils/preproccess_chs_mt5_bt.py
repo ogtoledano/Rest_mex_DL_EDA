@@ -139,7 +139,7 @@ def tokenize(data,tokenizer):
 
     source_encoding = tokenizer(
         data['input_text'],
-        max_length=512,
+        max_length=250,
         padding='max_length',
         pad_to_max_length=True,
         truncation=True,
@@ -204,7 +204,7 @@ def build_dataset_and_dict():
     augmentation = {'0': 1206,
                     '1': 1103,
                     '2': 1200,
-                    '3': 1200}# 1198
+                    '3': 1200}# 1199
 
     first_model_tkn, first_model = get_mt_model('es-en', device)
     second_model_tkn, second_model = get_mt_model('en-es', device)
