@@ -15,6 +15,9 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
+# Print numpy array without truncation
+import sys
+np.set_printoptions(threshold=sys.maxsize)
 
 def confusion_matrix_chart_eda(test_accs, confusion_mtxes, labels, url_img, figsize=(20, 8)):
     cm = confusion_mtxes[np.argmax(test_accs)]
@@ -94,8 +97,8 @@ if __name__ == "__main__":
 
         # Do STAGE 2: Learning full-connected layer by EDA optimization
         trainer.fit(train_dataset, fit_param=param_model)
-        trainer.score_unbalance(val_dataset, task="attraction")
-        trainer.score_unbalance(train_dataset, is_unbalanced=False, task="attraction")
-        confusion_matrix_chart_eda(trainer.test_accs, trainer.confusion_mtxes, ["1","2","3","4","5"], wdir + "experiments/")
+        trainer.score_unbalance(val_dataset, task="main")
+        trainer.score_unbalance(train_dataset, is_unbalanced=False, task="main")
+        # confusion_matrix_chart_eda(trainer.test_accs, trainer.confusion_mtxes, ["1","2","3","4","5"], wdir + "experiments/")
         log_exp_run.experiments(dic_param['cnn_optimizer'] + " + EDA_CMA_ES: Process ends successfully!")
         log_exp_run.experiments("--------------------------\n\n\n")

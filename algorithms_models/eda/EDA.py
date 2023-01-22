@@ -1,6 +1,9 @@
 import numpy
 from operator import attrgetter
 
+# Print numpy array without truncation
+import sys
+numpy.set_printoptions(threshold=sys.maxsize)
 
 class EMNA(object):
     """
@@ -20,6 +23,7 @@ class EMNA(object):
         self.sigma = numpy.array(sigma)
         self.lambda_ = lambda_
         self.mu = mu
+        self.C=numpy.identity(self.dim) # Covariance matrix
 
     def generate(self, ind_init):
         # Generate lambda_ individuals and put them into the provided class
@@ -37,6 +41,7 @@ class EMNA(object):
         # Adjust variance of the distribution
         self.sigma = numpy.sqrt(numpy.sum(numpy.sum((z - avg)**2, axis=1)) / (self.mu*self.dim))
         self.centroid = self.centroid + avg
+        self.C=numpy.cov(numpy.asarray(population).T)
 
         
         

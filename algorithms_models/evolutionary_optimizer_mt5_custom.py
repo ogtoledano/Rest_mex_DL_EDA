@@ -43,6 +43,8 @@ import os
 creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMin)
 
+# Print numpy array without truncation
+np.set_printoptions(threshold=sys.maxsize)
 
 class EDA_Optimizer(NeuralNet):
 
@@ -233,6 +235,7 @@ class EDA_Optimizer(NeuralNet):
         self.test_accs = []
         self.train_accs = []
         self.confusion_mtxes = []
+        self.cov_matrix = []
 
         for gen in range(generations):
             # Generate a new population
@@ -285,6 +288,12 @@ class EDA_Optimizer(NeuralNet):
         log_exp_run.experiments("Sigma: " + str(sigma) + " centroid: " + str(centroid) + "\r\n")
         log_exp_run.experiments("\r\n" + str(logbook) + "\r\n")
         log_exp_run.experiments(list(series_fitness))
+
+        log_exp_run.experiments("Covariance Matrixes:\r\n")
+        for c in self.cov_matrix:
+            log_exp_run.experiments("Covariance Matrix:\r\n")
+            log_exp_run.experiments(c)
+            log_exp_run.experiments("----------------------\n")
 
     # Training tensor model using CUMDA as EDA algorithms, with early stopping
     def train_eda_cumda_early_stopping(self, sigma, generations, data, test_data, is_unbalanced=False, task="main"):
@@ -419,6 +428,7 @@ class EDA_Optimizer(NeuralNet):
         self.test_accs = []
         self.train_accs = []
         self.confusion_mtxes = []
+        self.cov_matrix=[]
 
         for gen in range(generations):
             # Generate a new population
@@ -450,6 +460,9 @@ class EDA_Optimizer(NeuralNet):
                 # The stagnation condition
                 conditions["Stagnation"] = True
 
+            if gen%5 == 0 or any(conditions.values()):
+                self.cov_matrix.append(strategy.C)
+
             if any(conditions.values()):
                 break
 
@@ -472,6 +485,12 @@ class EDA_Optimizer(NeuralNet):
         log_exp_run.experiments("Sigma: " + str(sigma) + " centroid: " + str(centroid) + "\r\n")
         log_exp_run.experiments("\r\n" + str(logbook) + "\r\n")
         log_exp_run.experiments(list(series_fitness))
+
+        log_exp_run.experiments("Covariance Matrixes:\r\n")
+        for c in self.cov_matrix:
+            log_exp_run.experiments("Covariance Matrix:\r\n")
+            log_exp_run.experiments(c)
+            log_exp_run.experiments("----------------------\n")
 
     def compute_metrics(self, labels, preds):
 
