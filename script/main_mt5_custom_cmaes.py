@@ -93,7 +93,8 @@ if __name__ == "__main__":
 
         param_model = {"generations": dic_param['generations'], 'mode': "EDA_CMA_ES",
                        "population_size": dic_param['individuals'],
-                       "checkpoint": wdir + "checkpoints/" + dic_param['cnn_checkpoint'], 'test_data': val_dataset, 'is_unbalanced': False, 'task': 'main'}
+                       "checkpoint": wdir + "checkpoints/" + dic_param['cnn_checkpoint'], 'test_data': val_dataset, 'is_unbalanced': False, 'task': 'main',
+                       "initial_centroid_fc": False}
 
         # Do STAGE 2: Learning full-connected layer by EDA optimization
         trainer.fit(train_dataset, fit_param=param_model)

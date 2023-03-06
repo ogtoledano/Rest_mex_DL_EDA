@@ -82,6 +82,17 @@ class EDA_Optimizer(NeuralNet):
     def get_module(self):
         return self.module_
 
+    def initial_centroid_fc(self):
+        fc_pathern = re.compile("fc\w*")  # matching only with full final_layer_norm layers (fc)
+        self.centroid_fc =[]
+        for name, p in self.module_.named_parameters():
+            if p.requires_grad and fc_pathern.match(name):
+                for param in p.data.cpu().numpy():
+                    if isinstance(param,np.float32):
+                        self.centroid_fc.append(param)
+                    else:
+                        self.centroid_fc += param.tolist()
+
     # Sci-kit methods
     def predict(self, X):
         input_ids = X['source_ids'].to(self.device)
@@ -117,16 +128,18 @@ class EDA_Optimizer(NeuralNet):
         task = fit_params["task"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["task"]
         test_data = fit_params["test_data"] if fit_params.get('fit_param') is None else fit_params["fit_param"]["test_data"]
 
+        self.initial_centroid_fc()
+
         if self.mode == "EDA_EMNA":
             log_exp_run.experiments("Training with EDA_EMNA...")
             start_time = time.time()
-            self.train_eda_enma_early_stopping(self.sigma, self.centroid, fit_params["fit_param"]["generations"], X, test_data, is_unbalanced, task)
+            self.train_eda_enma_early_stopping(self.sigma, self.centroid, fit_params["fit_param"]["generations"], X, test_data, is_unbalanced, task, fit_params["fit_param"]["initial_centroid_fc"])
             log_exp_run.experiments("Time elapsed for EDA_EMNA: " + str(time.time() - start_time))
 
         if self.mode == "EDA_CMA_ES":
             log_exp_run.experiments("Training with EDA_CMA_ES...")
             start_time = time.time()
-            self.train_eda_cma_es_early_stopping(self.sigma, self.centroid, fit_params["fit_param"]["generations"], X, test_data, is_unbalanced, task)
+            self.train_eda_cma_es_early_stopping(self.sigma, self.centroid, fit_params["fit_param"]["generations"], X, test_data, is_unbalanced, task, fit_params["fit_param"]["initial_centroid_fc"])
             log_exp_run.experiments("Time elapsed for EDA_CMA_ES: " + str(time.time() - start_time))
 
         if self.mode == "EDA_CUMDA":
@@ -194,7 +207,7 @@ class EDA_Optimizer(NeuralNet):
         return train_loss
 
     # Training of tensor model using EMNA as EDA algorithms, with early stopping
-    def train_eda_enma_early_stopping(self, sigma, centroid, generations, data, test_data, is_unbalanced=False, task="main"):
+    def train_eda_enma_early_stopping(self, sigma, centroid, generations, data, test_data, is_unbalanced=False, task="main", initial_centroid_fc=False):
         log_exp_run = make_logger(name="experiment_" + self.mode)
         iter_data = DataLoader(data, batch_size=self.batch_size,sampler=ImbalancedDatasetSamplerMT5(data)) if is_unbalanced else DataLoader(data,batch_size=self.batch_size,shuffle=True)
 
@@ -206,7 +219,7 @@ class EDA_Optimizer(NeuralNet):
         MU = int(LAMBDA / 4)
 
         # Creating an instance of EMNA
-        strategy = EMNA(centroid=[centroid] * N, sigma=sigma, mu=MU, lambda_=LAMBDA)
+        strategy = EMNA(centroid=[centroid] * N if not initial_centroid_fc else self.centroid_fc, sigma=sigma, mu=MU, lambda_=LAMBDA)
 
         toolbox = base.Toolbox()
         toolbox.register("evaluate", loss_function, model=self.module_, training_data=iter_data, device=self.device, task=task)
@@ -392,7 +405,7 @@ class EDA_Optimizer(NeuralNet):
         log_exp_run.experiments(list(series_fitness))
 
     # Training tensor model using CMA-ES as EDA algorithms, with early stopping
-    def train_eda_cma_es_early_stopping(self, sigma, centroid, generations, data, test_data, is_unbalanced=False, task="main"):
+    def train_eda_cma_es_early_stopping(self, sigma, centroid, generations, data, test_data, is_unbalanced=False, task="main", initial_centroid_fc=False):
         log_exp_run = make_logger(name="experiment_" + self.mode)
         iter_data = DataLoader(data, batch_size=self.batch_size, sampler=ImbalancedDatasetSamplerMT5(data)) if is_unbalanced else DataLoader(data, batch_size=self.batch_size, shuffle=True)
         # LAMBDA is the size of the population
@@ -404,7 +417,7 @@ class EDA_Optimizer(NeuralNet):
         np.random.seed(int(time.time()))
 
         # creating an instance of CMA
-        strategy = cma.Strategy(centroid=[centroid] * N, sigma=sigma, lambda_=LAMBDA)#cma.Strategy
+        strategy = cma.Strategy(centroid=[centroid] * N if not initial_centroid_fc else self.centroid_fc, sigma=sigma, lambda_=LAMBDA)#cma.Strategy
         toolbox.register("generate", strategy.generate, creator.Individual)
         toolbox.register("update", strategy.update)
         hof = tools.HallOfFame(1)
