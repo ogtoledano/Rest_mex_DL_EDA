@@ -4,7 +4,7 @@ from collections import OrderedDict
 import torch.nn as nn
 from transformers.models.roberta.modeling_roberta import RobertaEncoder
 from transformers import RobertaModel
-from transformers.modeling_outputs import TokenClassifierOutput
+from transformers.modeling_outputs import TokenClassifierOutput,SequenceClassifierOutput
 import torch
 
 class CustomRoBERTaESPModel(nn.Module):
@@ -38,5 +38,5 @@ class CustomRoBERTaESPModel(nn.Module):
             logits=logits.view(-1, self.labels)
             loss = loss_fct(logits, labels_ids.view(-1))
 
-        return TokenClassifierOutput(loss=loss, logits=logits, hidden_states=outputs.last_hidden_state,
+        return SequenceClassifierOutput(loss=loss, logits=logits, hidden_states=outputs.last_hidden_state,
                                      attentions=outputs.attentions)
