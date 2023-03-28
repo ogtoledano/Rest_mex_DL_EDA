@@ -16,8 +16,7 @@ class CustomRoBERTaModel(nn.Module):
         self.model = RobertaModel.from_pretrained("roberta-base")
         self.config =self.model.config
         self.dropout = nn.Dropout(0.1)
-        self.dense = nn.Linear(512, 256)  # load and initialize weights
-        self.dense2 = nn.Linear(256, 64)
+        self.dense = nn.Linear(768, 64)  # load and initialize weights
         self.fc = nn.Linear(64, labels)
 
     def forward(self, input_ids=None, attention_mask=None, labels=None, labels_ids=None):
@@ -27,10 +26,7 @@ class CustomRoBERTaModel(nn.Module):
         # Add custom layers
         sequence_output = self.dropout(outputs.last_hidden_state)  # outputs[0]=last hidden state
         sequence_output = sequence_output[:, 0, :]
-        logits = self.dense(torch.reshape(sequence_output,(-1, 512)))  # calculate losses torch.reshape(sequence_output,(-1, 4096))
-        logits = torch.tanh(logits)
-        logits = self.dropout(logits)
-        logits = self.dense2(logits)  # calculate losses torch.reshape(sequence_output,(-1, 4096))
+        logits = self.dense(torch.reshape(sequence_output,(-1, 768)))  # calculate losses torch.reshape(sequence_output,(-1, 4096))
         logits = torch.tanh(logits)
         logits = self.dropout(logits)
         logits = self.fc(logits)
