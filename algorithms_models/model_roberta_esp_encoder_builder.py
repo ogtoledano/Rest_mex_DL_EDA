@@ -30,8 +30,8 @@ class CustomRoBERTaESPModel(nn.Module):
         logits = torch.tanh(logits)
         logits = self.dropout(logits)
         logits = self.fc(logits)
-        logits = torch.tanh(logits)
-        logits = self.dropout(logits)
+        #logits = torch.tanh(logits)
+        #logits = self.dropout(logits)
         loss = None
         if labels is not None:
             loss_fct = nn.CrossEntropyLoss()
