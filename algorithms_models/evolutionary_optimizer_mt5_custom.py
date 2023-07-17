@@ -539,7 +539,7 @@ class EDA_Optimizer(NeuralNet):
 
                 logits = output.logits
                 preds_batch = torch.argmax(logits, dim=-1)
-                log_preds.append(logits)
+                log_preds.append(logits.cpu().numpy())
                 predictions.extend(preds_batch.cpu().numpy())
                 labels_ref.extend(labels_ids.cpu().numpy())
 
