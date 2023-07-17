@@ -29,7 +29,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 # Scikit-learn ----------------------------------------------------------+
-from sklearn.metrics import classification_report, precision_recall_fscore_support, f1_score, accuracy_score, mean_absolute_error, auc
+from sklearn.metrics import classification_report, precision_recall_fscore_support, f1_score, accuracy_score, mean_absolute_error, roc_auc_score
 from skorch import NeuralNet
 import sklearn.metrics as sm
 from utils.imbalanced_dataset_sampling_mt5 import ImbalancedDatasetSamplerMT5
@@ -523,6 +523,7 @@ class EDA_Optimizer(NeuralNet):
         self.module_.eval()
 
         predictions = []
+        log_preds=[]
         labels_ref = []
 
         with torch.no_grad():
@@ -538,13 +539,14 @@ class EDA_Optimizer(NeuralNet):
 
                 logits = output.logits
                 preds_batch = torch.argmax(logits, dim=-1)
+                log_preds.append(logits)
                 predictions.extend(preds_batch.cpu().numpy())
                 labels_ref.extend(labels_ids.cpu().numpy())
 
         accuracy = accuracy_score(labels_ref, predictions)
         mae = mean_absolute_error(labels_ref, predictions)
         macro_f1 = f1_score(labels_ref, predictions, average='macro')
-        auc_score = auc(labels_ref, predictions)
+        auc_score = roc_auc_score(labels_ref, log_preds, multi_class='ovr')
 
         log_exp_run.experiments("Cross-entropy loss for each fold: {}".format(train_loss))
         log_exp_run.experiments("Accuracy for each fold: " + str(accuracy))
