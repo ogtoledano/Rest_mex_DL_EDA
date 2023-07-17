@@ -525,6 +525,7 @@ class EDA_Optimizer(NeuralNet):
         predictions = []
         log_preds=[]
         labels_ref = []
+        f = torch.nn.Softmax(dim=1)
 
         with torch.no_grad():
             for batch in iter_data:
@@ -539,7 +540,7 @@ class EDA_Optimizer(NeuralNet):
 
                 logits = output.logits
                 preds_batch = torch.argmax(logits, dim=-1)
-                log_preds.append(logits.cpu().numpy())
+                log_preds.extend(f(logits).cpu().numpy())
                 predictions.extend(preds_batch.cpu().numpy())
                 labels_ref.extend(labels_ids.cpu().numpy())
 
